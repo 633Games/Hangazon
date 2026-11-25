@@ -35,6 +35,13 @@ export function isTitleSolved(
   return true
 }
 
+/** Full-title / word guess: compare normalized letter+space forms. */
+export function titlesMatch(guess: string, title: string): boolean {
+  const a = normalizeTitle(guess)
+  const b = normalizeTitle(title)
+  return a.length > 0 && a === b
+}
+
 export const MAX_MISSES = 6
 
 export function zoomScale(misses: number, revealed: boolean): number {

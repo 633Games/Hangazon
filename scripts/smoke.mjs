@@ -1,6 +1,19 @@
 import { chromium } from 'playwright'
-import { mkdir } from 'node:fs/promises'
+import { mkdir, readFile } from 'node:fs/promises'
 import path from 'node:path'
+
+async function titleByProductId(id) {
+  const raw = await readFile(
+    path.resolve('src/data/products.ts'),
+    'utf8',
+  )
+  const re = new RegExp(
+    `id:\\s*'${id}'[\\s\\S]*?title:\\s*'((?:\\\\'|[^'])*)'`,
+  )
+  const m = raw.match(re)
+  if (!m) throw new Error(`title not found for product id ${id}`)
+  return m[1].replace(/\\'/g, "'")
+}
 
 const BASE = process.env.HANGAZON_URL || 'http://127.0.0.1:4173/'
 const OUT = path.resolve('demo/smoke')
@@ -43,10 +56,22 @@ try {
   note('round: letter keyboard visible')
   await page.screenshot({ path: path.join(OUT, '02-letters.png'), fullPage: true })
 
-  // Early exit with blank-space bonus
-  await page.getByRole('button', { name: /Have a Guess/i }).click()
+  // Title / word guess from product image id → catalog title
+  const zoomSrc = await page.locator('.zoom-image').getAttribute('src')
+  const id = zoomSrc?.match(/\/products\/([^/.]+)/)?.[1]
+  if (!id) throw new Error(`could not parse product id from ${zoomSrc}`)
+  const title = await titleByProductId(id)
+  note(`title guess: product=${id}`)
+
+  await page.fill('#title-guess', 'definitely not the title')
+  await page.getByRole('button', { name: /^Guess$/i }).click()
+  await page.waitForSelector('.title-guess-wrong', { timeout: 5000 })
+  note('title guess: wrong attempt recorded')
+
+  await page.fill('#title-guess', title)
+  await page.getByRole('button', { name: /^Guess$/i }).click()
   await page.waitForSelector('.price-input', { timeout: 10000 })
-  note('price: guess panel after Have a Guess')
+  note('price: guess panel after correct title guess')
   await page.screenshot({ path: path.join(OUT, '03-price.png'), fullPage: true })
 
   await page.fill('.price-input', '29.99')
