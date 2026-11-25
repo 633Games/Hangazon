@@ -7,6 +7,7 @@ import { LetterBoard } from './components/LetterBoard'
 import { PriceGuess } from './components/PriceGuess'
 import { Reveal } from './components/Reveal'
 import { Stars } from './components/Stars'
+import { TitleGuess } from './components/TitleGuess'
 import { ZoomedProduct } from './components/ZoomedProduct'
 import { useHangazonRound } from './hooks/useHangazonRound'
 import './App.css'
@@ -24,6 +25,15 @@ export default function App() {
     if (game.phase !== 'letters') return
     const onKey = (e: KeyboardEvent) => {
       if (e.metaKey || e.ctrlKey || e.altKey) return
+      const t = e.target
+      if (
+        t instanceof HTMLElement &&
+        (t.tagName === 'INPUT' ||
+          t.tagName === 'TEXTAREA' ||
+          t.isContentEditable)
+      ) {
+        return
+      }
       game.guessLetter(e.key)
     }
     window.addEventListener('keydown', onKey)
@@ -156,17 +166,20 @@ export default function App() {
                     exit={{ opacity: 0 }}
                     className="buybox-shell"
                   >
-                    <p className="buybox-muted">Guess the listing title</p>
-                    <p className="buybox-stock">In Stock</p>
-                    <p className="buybox-ships">Ships from Hangazon · Sold by demo</p>
-                    <button
-                      type="button"
-                      className="btn btn-guess buybox-cta"
+                    <TitleGuess
+                      title={game.title}
+                      guessed={game.guessed}
+                      value={game.titleGuess}
+                      onChange={game.setTitleGuess}
+                      onSubmitWord={game.submitWordGuess}
+                      onSubmitTitle={game.submitTitleGuess}
                       disabled={game.letterOutcome !== null}
-                      onClick={game.haveAGuess}
-                    >
-                      Have a Guess
-                    </button>
+                      wrong={game.titleGuessWrong}
+                    />
+                    <p className="buybox-stock">In Stock</p>
+                    <p className="buybox-ships">
+                      Ships from Hangazon · Sold by demo
+                    </p>
                   </motion.div>
                 )}
                 {game.phase === 'price' && (

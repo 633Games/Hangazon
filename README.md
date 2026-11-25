@@ -28,6 +28,8 @@ npm run preview
 
 - **Daily** — date-hashed aisle + listing
 - **Random** — aisle chips filter the catalog
+- Letter scan on the keyboard, or type the full listing title in the buy box (**Guess**)
+- Correct early title guess keeps blank-slot bonus for the price score
 - Fast-type: queue keys; 2→2× scan, 3→3×, …
 
 ## Stack

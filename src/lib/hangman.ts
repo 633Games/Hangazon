@@ -35,6 +35,49 @@ export function isTitleSolved(
   return true
 }
 
+/** Full-title / word guess: compare normalized letter+space forms. */
+export function titlesMatch(guess: string, title: string): boolean {
+  const a = normalizeTitle(guess)
+  const b = normalizeTitle(title)
+  return a.length > 0 && a === b
+}
+
+/** Single word of a normalized title (letters only, uppercased). */
+export function normalizeWord(word: string): string {
+  return word
+    .toUpperCase()
+    .replace(/[^A-Z]/g, '')
+    .trim()
+}
+
+export function titleWords(title: string): string[] {
+  return normalizeTitle(title).split(' ').filter(Boolean)
+}
+
+/** True when every letter slot in this word is already revealed. */
+export function isWordRevealed(
+  word: string,
+  guessed: ReadonlySet<string>,
+): boolean {
+  for (const ch of word) {
+    if (LETTER.test(ch) && !guessed.has(ch)) return false
+  }
+  return word.length > 0
+}
+
+/** Guess matches the word at `index` in the normalized title. */
+export function wordMatches(
+  guess: string,
+  title: string,
+  index: number,
+): boolean {
+  const words = titleWords(title)
+  const target = words[index]
+  if (!target) return false
+  const a = normalizeWord(guess)
+  return a.length > 0 && a === target
+}
+
 export const MAX_MISSES = 6
 
 export function zoomScale(misses: number, revealed: boolean): number {
