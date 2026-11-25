@@ -1,12 +1,12 @@
 import { useEffect } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
 import { CategoryChips } from './components/CategoryChips'
-import { Gallows } from './components/Gallows'
 import { Lives } from './components/Lives'
 import { Keyboard } from './components/Keyboard'
 import { LetterBoard } from './components/LetterBoard'
 import { PriceGuess } from './components/PriceGuess'
 import { Reveal } from './components/Reveal'
+import { Stars } from './components/Stars'
 import { ZoomedProduct } from './components/ZoomedProduct'
 import { useHangazonRound } from './hooks/useHangazonRound'
 import './App.css'
@@ -15,6 +15,10 @@ export default function App() {
   const game = useHangazonRound()
   const revealed =
     game.phase === 'reveal' || game.letterOutcome === 'guess'
+  const titleKnown =
+    revealed ||
+    game.letterOutcome === 'lose' ||
+    game.letterOutcome === 'guess'
 
   useEffect(() => {
     if (game.phase !== 'letters') return
@@ -90,73 +94,88 @@ export default function App() {
           </div>
         </section>
       ) : (
-        <main className="round">
-          <div className="round-top">
-            {game.phase === 'letters' ? (
-              <>
-                <Lives misses={game.misses} />
-                <Gallows misses={game.misses} />
-              </>
-            ) : (
-              <span />
-            )}
-          </div>
+        <main className="round round-pdp">
+          <p className="breadcrumb" aria-hidden>
+            Hangazon › {game.product.category} › Listing
+          </p>
 
-          <div className="store-well">
-            <ZoomedProduct
-              imageUrl={game.product.imageUrl}
-              alt={revealed ? game.product.title : 'Product'}
-              misses={game.misses}
-              revealed={revealed}
-              shakeKey={game.shakeKey}
-            />
+          <div className="pdp">
+            <div className="pdp-media">
+              <ZoomedProduct
+                imageUrl={game.product.imageUrl}
+                alt={titleKnown ? game.product.title : 'Product'}
+                misses={game.misses}
+                revealed={revealed || game.phase === 'price'}
+                shakeKey={game.shakeKey}
+              />
+            </div>
 
-            <div className="store-side">
+            <div className="pdp-center">
+              <p className="pdp-brand-link">Visit the {game.product.brand} Store</p>
+
               <LetterBoard
                 title={game.title}
                 guessed={game.guessed}
-                forceReveal={
-                  revealed ||
-                  game.letterOutcome === 'lose' ||
-                  game.letterOutcome === 'guess'
-                }
+                forceReveal={titleKnown}
                 flight={game.flight}
                 onFlightDone={game.finishFlight}
               />
 
+              {(titleKnown || game.phase !== 'letters') && (
+                <Stars
+                  rating={game.product.rating}
+                  reviews={game.product.reviews}
+                />
+              )}
+
+              {game.phase === 'letters' && (
+                <div className="pdp-play">
+                  <Lives misses={game.misses} />
+                  <Keyboard
+                    guessed={game.guessed}
+                    title={game.title}
+                    disabled={game.letterOutcome !== null}
+                    pending={game.pendingLetters}
+                    onGuess={game.guessLetter}
+                  />
+                </div>
+              )}
+
+              {game.phase === 'price' && (
+                <p className="pdp-hint">How much does this listing cost?</p>
+              )}
+            </div>
+
+            <aside className="pdp-buybox">
               <AnimatePresence mode="wait">
                 {game.phase === 'letters' && (
                   <motion.div
-                    key="letters"
-                    initial={{ opacity: 0, y: 8 }}
+                    key="box-letters"
+                    initial={{ opacity: 0, y: 6 }}
                     animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: -4 }}
+                    exit={{ opacity: 0 }}
+                    className="buybox-shell"
                   >
-                    <Keyboard
-                      guessed={game.guessed}
-                      title={game.title}
+                    <p className="buybox-muted">Guess the listing title</p>
+                    <p className="buybox-stock">In Stock</p>
+                    <p className="buybox-ships">Ships from Hangazon · Sold by demo</p>
+                    <button
+                      type="button"
+                      className="btn btn-guess buybox-cta"
                       disabled={game.letterOutcome !== null}
-                      pending={game.pendingLetters}
-                      onGuess={game.guessLetter}
-                    />
-                    <div className="early-guess-row">
-                      <button
-                        type="button"
-                        className="btn btn-guess"
-                        disabled={game.letterOutcome !== null}
-                        onClick={game.haveAGuess}
-                      >
-                        Have a Guess
-                      </button>
-                    </div>
+                      onClick={game.haveAGuess}
+                    >
+                      Have a Guess
+                    </button>
                   </motion.div>
                 )}
                 {game.phase === 'price' && (
                   <motion.div
-                    key="price"
-                    initial={{ opacity: 0, y: 8 }}
+                    key="box-price"
+                    initial={{ opacity: 0, y: 6 }}
                     animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: -4 }}
+                    exit={{ opacity: 0 }}
+                    className="buybox-shell"
                   >
                     <PriceGuess
                       value={game.priceGuess}
@@ -167,9 +186,10 @@ export default function App() {
                 )}
                 {game.phase === 'reveal' && game.priceScore !== null && (
                   <motion.div
-                    key="reveal"
-                    initial={{ opacity: 0, y: 8 }}
+                    key="box-reveal"
+                    initial={{ opacity: 0, y: 6 }}
                     animate={{ opacity: 1, y: 0 }}
+                    className="buybox-shell buybox-shell-reveal"
                   >
                     <Reveal
                       product={game.product}
@@ -183,7 +203,7 @@ export default function App() {
                   </motion.div>
                 )}
               </AnimatePresence>
-            </div>
+            </aside>
           </div>
         </main>
       )}

@@ -1,4 +1,3 @@
-import { AnimatePresence, motion } from 'framer-motion'
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { isLetterRevealed } from '../lib/hangman'
 import type { LetterFlight } from '../hooks/useHangazonRound'
@@ -11,9 +10,9 @@ type Props = {
   onFlightDone: () => void
 }
 
-const STEP_MS = 68
-const LAND_MS = 140
-const MISS_TAIL_MS = 110
+const STEP_MS = 52
+const LAND_MS = 100
+const MISS_TAIL_MS = 90
 
 export function LetterBoard({
   title,
@@ -127,60 +126,39 @@ export function LetterBoard({
   let flatCounter = 0
 
   return (
-    <div
-      className="letter-board"
-      aria-label="Product title"
-      data-speed={flight?.speed ?? 1}
-    >
+    <h1 className="listing-title" aria-label="Product title">
       {words.map((word, wi) => (
-        <div className="letter-word" key={`${word}-${wi}`}>
+        <span className="listing-word" key={`${word}-${wi}`}>
           {[...word].map((ch) => {
             const flat = flatCounter++
             const committed = forceReveal || isLetterRevealed(ch, guessed)
             const justLanded = landed.has(flat)
             const show = committed || justLanded
             const scanning = flying && cursor === flat
-            const passed = flying && cursor > flat
 
             return (
               <span
                 key={flat}
                 className={[
-                  'letter-slot',
-                  show ? 'is-revealed' : '',
+                  'listing-char',
+                  show ? 'is-filled' : 'is-blank',
                   scanning ? 'is-scan' : '',
-                  passed && !show ? 'is-passed' : '',
+                  justLanded ? 'is-land' : '',
                 ]
                   .filter(Boolean)
                   .join(' ')}
               >
-                <AnimatePresence>
-                  {show && (
-                    <motion.span
-                      key={`g-${flat}`}
-                      className="letter-glyph"
-                      initial={
-                        justLanded
-                          ? { opacity: 0, y: -16, scale: 1.4 }
-                          : { opacity: 1, y: 0, scale: 1 }
-                      }
-                      animate={{ opacity: 1, y: 0, scale: 1 }}
-                      transition={{
-                        type: 'spring',
-                        stiffness: 460 + (flight?.speed ?? 1) * 40,
-                        damping: 24,
-                      }}
-                    >
-                      {ch}
-                    </motion.span>
-                  )}
-                </AnimatePresence>
-                {scanning && <span className="scan-beam" />}
+                {show ? ch : '_'}
               </span>
             )
           })}
-        </div>
+          {wi < words.length - 1 ? (
+            <span className="listing-space" aria-hidden>
+              {' '}
+            </span>
+          ) : null}
+        </span>
       ))}
-    </div>
+    </h1>
   )
 }
