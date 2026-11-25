@@ -6,8 +6,8 @@ Hangman meets the storefront: zoomed product → letter scan → price score →
 
 Products live in `src/data/products.ts`. Each listing has:
 
-- `title` — hangman answer (A–Z + spaces)
-- `listingTitle`, `brand`, `price`, `rating`, … — buy-box copy
+- `title` — Amazon listing title (hangman puzzle + buy box)
+- `brand`, `price`, `rating`, … — buy-box copy
 - `affiliateUrl` — your Associates link (`tag=hangazon-21` on amazon.co.uk)
 
 Edit that file to add/change SKUs. Nothing is pulled live.

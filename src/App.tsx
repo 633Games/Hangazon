@@ -104,7 +104,7 @@ export default function App() {
           <div className="store-well">
             <ZoomedProduct
               imageUrl={game.product.imageUrl}
-              alt={revealed ? game.product.listingTitle : 'Product'}
+              alt={revealed ? game.product.title : 'Product'}
               misses={game.misses}
               revealed={revealed}
               shakeKey={game.shakeKey}

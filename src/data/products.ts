@@ -11,10 +11,8 @@ export type Category = (typeof CATEGORIES)[number]
 
 export type Product = {
   id: string
-  /** Hangman answer — letters A–Z and spaces only */
+  /** Amazon listing title — hangman puzzle + buy box */
   title: string
-  /** Longer storefront-style name for the reveal buy box */
-  listingTitle: string
   brand: string
   price: number
   /** Optional strikethrough “was” price */
@@ -36,14 +34,13 @@ function affiliateSearch(query: string): string {
 }
 
 /**
- * Baked catalog: hangman title + buy-box fields + affiliate URL.
+ * Baked catalog: listing title is the hangman puzzle; plus buy-box fields + affiliate URL.
  * No API — edit this file to add/change listings.
  */
 export const PRODUCTS: Product[] = [
   {
     id: 'earbuds',
-    title: 'WIRELESS EARBUDS',
-    listingTitle: 'Wireless Earbuds Bluetooth 5.3 with Charging Case, IPX5',
+    title: 'Wireless Earbuds Bluetooth 5.3 with Charging Case, IPX5',
     brand: 'SoundNest',
     price: 29.99,
     listPrice: 49.99,
@@ -59,8 +56,7 @@ export const PRODUCTS: Product[] = [
   },
   {
     id: 'keyboard',
-    title: 'MECHANICAL KEYBOARD',
-    listingTitle: 'Mechanical Gaming Keyboard RGB, Hot-Swap Switches',
+    title: 'Mechanical Gaming Keyboard RGB, Hot-Swap Switches',
     brand: 'KeyForge',
     price: 69.99,
     listPrice: 89.99,
@@ -76,8 +72,7 @@ export const PRODUCTS: Product[] = [
   },
   {
     id: 'camera',
-    title: 'INSTANT CAMERA',
-    listingTitle: 'Instant Print Camera with Built-in Flash — Film Sold Separately',
+    title: 'Instant Print Camera with Built-in Flash — Film Sold Separately',
     brand: 'SnapFolio',
     price: 84.99,
     listPrice: 99.99,
@@ -93,8 +88,7 @@ export const PRODUCTS: Product[] = [
   },
   {
     id: 'watch',
-    title: 'SMART WATCH',
-    listingTitle: 'Smart Watch Fitness Tracker with Heart Rate & GPS',
+    title: 'Smart Watch Fitness Tracker with Heart Rate & GPS',
     brand: 'PulseTrail',
     price: 129.0,
     listPrice: 159.0,
@@ -110,8 +104,7 @@ export const PRODUCTS: Product[] = [
   },
   {
     id: 'skillet',
-    title: 'CAST IRON SKILLET',
-    listingTitle: 'Pre-Seasoned Cast Iron Skillet, 30 cm',
+    title: 'Pre-Seasoned Cast Iron Skillet, 30 cm',
     brand: 'Hearth & Pan',
     price: 32.5,
     listPrice: 39.99,
@@ -127,8 +120,7 @@ export const PRODUCTS: Product[] = [
   },
   {
     id: 'blender',
-    title: 'PERSONAL BLENDER',
-    listingTitle: 'Personal Blender with To-Go Cup, 600W',
+    title: 'Personal Blender with To-Go Cup, 600W',
     brand: 'BlendGo',
     price: 39.99,
     listPrice: 54.99,
@@ -144,8 +136,7 @@ export const PRODUCTS: Product[] = [
   },
   {
     id: 'kettle',
-    title: 'ELECTRIC KETTLE',
-    listingTitle: 'Stainless Steel Electric Kettle, 1.7L Rapid Boil',
+    title: 'Stainless Steel Electric Kettle, 1.7L Rapid Boil',
     brand: 'BoilRight',
     price: 24.99,
     listPrice: 34.99,
@@ -161,8 +152,7 @@ export const PRODUCTS: Product[] = [
   },
   {
     id: 'lamp',
-    title: 'DESK LAMP',
-    listingTitle: 'LED Desk Lamp with USB Charging Port, Dimmable',
+    title: 'LED Desk Lamp with USB Charging Port, Dimmable',
     brand: 'LumenDesk',
     price: 27.99,
     listPrice: 39.5,
@@ -178,8 +168,7 @@ export const PRODUCTS: Product[] = [
   },
   {
     id: 'mug',
-    title: 'CERAMIC COFFEE MUG',
-    listingTitle: 'Ceramic Coffee Mug 350ml, Microwave Safe',
+    title: 'Ceramic Coffee Mug 350ml, Microwave Safe',
     brand: 'Clay & Co',
     price: 12.99,
     listPrice: 16.5,
@@ -195,8 +184,7 @@ export const PRODUCTS: Product[] = [
   },
   {
     id: 'candle',
-    title: 'SCENTED CANDLE',
-    listingTitle: 'Soy Scented Candle, 40-Hour Burn — Sandalwood',
+    title: 'Soy Scented Candle, 40-Hour Burn — Sandalwood',
     brand: 'Northwick',
     price: 18.0,
     listPrice: 24.0,
@@ -212,8 +200,7 @@ export const PRODUCTS: Product[] = [
   },
   {
     id: 'yogamat',
-    title: 'YOGA MAT',
-    listingTitle: 'Non-Slip Yoga Mat 6mm Extra Thick with Carry Strap',
+    title: 'Non-Slip Yoga Mat 6mm Extra Thick with Carry Strap',
     brand: 'FlexForm',
     price: 22.99,
     listPrice: 29.99,
@@ -229,8 +216,7 @@ export const PRODUCTS: Product[] = [
   },
   {
     id: 'dumbbells',
-    title: 'HEX DUMBBELLS',
-    listingTitle: 'Hex Dumbbell Pair with Rubber Coating — 2 × 5kg',
+    title: 'Hex Dumbbell Pair with Rubber Coating — 2 × 5kg',
     brand: 'IronLane',
     price: 34.99,
     listPrice: 44.99,
@@ -246,8 +232,7 @@ export const PRODUCTS: Product[] = [
   },
   {
     id: 'backpack',
-    title: 'TRAVEL BACKPACK',
-    listingTitle: 'Travel Backpack 40L Carry-On Friendly, Laptop Sleeve',
+    title: 'Travel Backpack 40L Carry-On Friendly, Laptop Sleeve',
     brand: 'Packwise',
     price: 59.99,
     listPrice: 79.0,
@@ -263,8 +248,7 @@ export const PRODUCTS: Product[] = [
   },
   {
     id: 'duffel',
-    title: 'WEEKENDER BAG',
-    listingTitle: 'Weekender Duffel Bag, Water-Resistant with Shoe Pocket',
+    title: 'Weekender Duffel Bag, Water-Resistant with Shoe Pocket',
     brand: 'Harbour Kit',
     price: 48.0,
     listPrice: 65.0,
@@ -280,8 +264,7 @@ export const PRODUCTS: Product[] = [
   },
   {
     id: 'sneakers',
-    title: 'RUNNING SHOES',
-    listingTitle: 'Men\'s Road Running Shoes — Lightweight Breathable Mesh',
+    title: 'Men\'s Road Running Shoes — Lightweight Breathable Mesh',
     brand: 'StrideCo',
     price: 64.99,
     listPrice: 89.99,
@@ -297,8 +280,7 @@ export const PRODUCTS: Product[] = [
   },
   {
     id: 'cap',
-    title: 'BASEBALL CAP',
-    listingTitle: 'Classic Baseball Cap Adjustable — Washed Cotton',
+    title: 'Classic Baseball Cap Adjustable — Washed Cotton',
     brand: 'Fieldmark',
     price: 14.99,
     listPrice: 19.99,

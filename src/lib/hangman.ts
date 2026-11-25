@@ -1,7 +1,11 @@
 const LETTER = /[A-Z]/
 
 export function normalizeTitle(title: string): string {
-  return title.toUpperCase().replace(/[^A-Z\s]/g, '')
+  return title
+    .toUpperCase()
+    .replace(/[^A-Z\s]/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim()
 }
 
 export function uniqueLetters(title: string): Set<string> {

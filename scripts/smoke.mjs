@@ -42,7 +42,8 @@ try {
     await page.waitForTimeout(40)
   }
 
-  await page.waitForSelector('.price-input', { timeout: 20000 })
+  // Long listing titles scan slowly even with the fast-type queue
+  await page.waitForSelector('.price-input', { timeout: 90000 })
   note('price: guess panel visible')
   await page.screenshot({ path: path.join(OUT, '03-price.png'), fullPage: true })
 

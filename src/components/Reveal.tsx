@@ -36,7 +36,7 @@ export function Reveal({
         {product.prime ? ' · Prime' : ''}
       </p>
       <p className="buybox-brand">Brand: {product.brand}</p>
-      <h2 className="reveal-title">{product.listingTitle}</h2>
+      <h2 className="reveal-title">{product.title}</h2>
       <Stars rating={product.rating} reviews={product.reviews} />
       <p className="buybox-blurb">{product.blurb}</p>
 
