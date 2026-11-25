@@ -1,6 +1,12 @@
 .app {
   position: relative;
+  flex: 1 1 auto;
+  width: 100%;
+  max-width: 100%;
+  min-height: 100%;
   min-height: 100svh;
+  min-height: 100dvh;
+  overflow-x: clip;
   background:
     radial-gradient(820px 420px at 6% -12%, rgba(255, 216, 20, 0.14), transparent 58%),
     radial-gradient(640px 380px at 100% 0%, rgba(35, 47, 62, 0.08), transparent 52%),
@@ -102,19 +108,28 @@
   display: grid;
   align-content: center;
   justify-items: center;
-  gap: 0.45rem;
-  padding: 1.5rem;
+  gap: var(--space-1);
+  padding:
+    max(1.5rem, var(--safe-top))
+    max(1.25rem, var(--safe-right))
+    max(1.5rem, var(--safe-bottom))
+    max(1.25rem, var(--safe-left));
   background: rgba(8, 2, 4, 0.42);
+  overflow-x: clip;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
 }
 
 .you-died {
   margin: 0;
+  max-width: 100%;
   font-family: var(--font-display);
-  font-size: clamp(2.6rem, 8.5vw, 4.6rem);
+  font-size: clamp(2.2rem, 11vw, 4.6rem);
   font-weight: 800;
   font-variation-settings: 'opsz' 72;
   letter-spacing: 0.1em;
   color: #c41e2a;
+  text-align: center;
   text-shadow:
     0 2px 0 #2a0508,
     0 6px 0 rgba(0, 0, 0, 0.45);
@@ -147,6 +162,7 @@
 
 .death-name-input {
   width: 100%;
+  min-height: var(--touch-min);
   padding: 0.55rem 0.7rem;
   border: 1px solid rgba(255, 190, 190, 0.35);
   border-radius: 4px;
@@ -169,6 +185,7 @@
 .death-next {
   margin-top: 0.35rem;
   min-width: 8rem;
+  min-height: var(--touch-min);
   border-radius: 20px;
   border-color: rgba(255, 190, 190, 0.4);
   color: #ffe8e8;
@@ -208,20 +225,31 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 1rem;
-  padding: 0.7rem 1.15rem;
+  gap: var(--space-2);
+  min-height: calc(var(--touch-min) + 0.4rem);
+  padding:
+    max(0.55rem, calc(var(--safe-top) * 0.35))
+    max(var(--page-pad-x), var(--safe-right))
+    0.55rem
+    max(var(--page-pad-x), var(--safe-left));
   background: linear-gradient(180deg, #1a222d 0%, var(--navy) 100%);
   color: #fff;
   box-shadow: 0 8px 24px rgba(19, 25, 33, 0.22);
   position: sticky;
   top: 0;
   z-index: 20;
+  max-width: 100%;
+  overflow: hidden;
 }
 
 .topbar-meta {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
+  justify-content: flex-end;
   gap: 0.45rem;
+  min-width: 0;
+  max-width: 55%;
 }
 
 .mode-pill,
@@ -305,13 +333,20 @@
 .subnav {
   display: flex;
   gap: 1rem;
-  padding: 0.45rem 1.15rem;
+  padding:
+    0.45rem
+    max(var(--page-pad-x), var(--safe-right))
+    0.45rem
+    max(var(--page-pad-x), var(--safe-left));
   background: var(--navy-2);
   color: #eee;
-  font-size: 0.78rem;
+  font-size: var(--step--1);
   font-weight: 600;
   overflow-x: auto;
+  overscroll-behavior-x: contain;
+  -webkit-overflow-scrolling: touch;
   white-space: nowrap;
+  scrollbar-width: thin;
 }
 
 .subnav span {
@@ -325,19 +360,21 @@
 }
 
 .brand-hero {
-  font-size: clamp(3.6rem, 14vw, 7rem);
+  font-size: clamp(2.75rem, 12vw, 7rem);
   font-weight: 800;
   font-variation-settings: 'opsz' 96;
   letter-spacing: -0.03em;
   text-shadow: 4px 4px 0 var(--accent-deep);
   margin: 0 0 0.2rem;
+  max-width: 100%;
+  overflow-wrap: anywhere;
   animation: brand-in 0.55s var(--ease-snap) both;
 }
 
 .hero-tag {
   margin: 0;
-  max-width: 28rem;
-  font-size: clamp(1.05rem, 2.4vw, 1.25rem);
+  max-width: min(28rem, 100%);
+  font-size: var(--step-1);
   font-weight: 600;
   line-height: 1.35;
   color: var(--ink);
@@ -361,13 +398,18 @@
 .lobby-board {
   width: min(720px, 100%);
   margin: -1.5rem auto 2.5rem;
-  padding: 0 1rem;
+  padding: 0 var(--page-pad-x);
   position: relative;
   z-index: 2;
+  min-width: 0;
 }
 
 .scoreboard-hero {
-  padding: clamp(1.5rem, 4vw, 2.5rem) 1.25rem 1rem;
+  padding:
+    clamp(1.25rem, 4vw, 2.5rem)
+    max(var(--page-pad-x), var(--safe-right))
+    1rem
+    max(var(--page-pad-x), var(--safe-left));
   display: grid;
   gap: 0.55rem;
   justify-items: start;
@@ -399,10 +441,12 @@
 }
 
 .scroll-board {
-  padding: 0.85rem 1rem 1rem;
+  padding: var(--space-2) var(--space-3) var(--space-3);
   background: #fff;
   border: 1px solid var(--line);
   box-shadow: var(--shadow-md);
+  max-width: 100%;
+  overflow: hidden;
 }
 
 .scroll-board-head {
@@ -446,12 +490,16 @@
 
 .scroll-board-table-wrap {
   overflow-x: auto;
+  overscroll-behavior-x: contain;
+  -webkit-overflow-scrolling: touch;
+  max-width: 100%;
 }
 
 .scroll-board-table {
   width: 100%;
+  min-width: 18rem;
   border-collapse: collapse;
-  font-size: 0.9rem;
+  font-size: var(--step--1);
   font-variant-numeric: tabular-nums;
 }
 
@@ -490,10 +538,15 @@
 .ladder {
   width: min(1180px, 100%);
   margin: 0 auto;
-  padding: 0.85rem 1rem 3rem;
+  padding:
+    var(--space-2)
+    max(var(--page-pad-x), var(--safe-right))
+    max(3rem, calc(2rem + var(--safe-bottom)))
+    max(var(--page-pad-x), var(--safe-left));
   display: grid;
-  gap: 0.85rem;
+  gap: var(--space-2);
   scroll-padding-top: 4.5rem;
+  min-width: 0;
 }
 
 .ladder-goal {
@@ -522,12 +575,13 @@
 
 .ladder-rung-done {
   display: grid;
-  grid-template-columns: 72px minmax(0, 1fr);
-  gap: 0.85rem;
+  grid-template-columns: minmax(56px, 72px) minmax(0, 1fr);
+  gap: var(--space-2);
   align-items: center;
   padding: 0.7rem 0.85rem;
   background: #fff;
   border: 1px solid var(--line);
+  min-width: 0;
 }
 
 .ladder-rung-done.is-failed {
@@ -614,14 +668,16 @@
 
 .ladder-rung-locked {
   display: grid;
-  grid-template-columns: 64px minmax(0, 1fr);
-  gap: 0.75rem;
+  grid-template-columns: minmax(52px, 64px) minmax(0, 1fr);
+  gap: var(--space-2);
   align-items: center;
+  min-height: var(--touch-min);
   padding: 0.65rem 0.85rem;
   border: 1px dashed var(--line-strong);
   background:
     linear-gradient(180deg, rgba(244, 246, 248, 0.92), rgba(227, 231, 237, 0.85));
   opacity: 0.85;
+  min-width: 0;
 }
 
 .rung-locked-media {
@@ -657,9 +713,14 @@
 .hero {
   position: relative;
   min-height: calc(100svh - 56px);
+  min-height: calc(100dvh - 56px);
   display: grid;
   align-content: end;
-  padding: clamp(1.25rem, 4vw, 2.5rem);
+  padding:
+    clamp(1.25rem, 4vw, 2.5rem)
+    max(var(--page-pad-x), var(--safe-right))
+    clamp(1.25rem, 4vw, 2.5rem)
+    max(var(--page-pad-x), var(--safe-left));
   overflow: hidden;
 }
 
@@ -707,6 +768,7 @@
   display: flex;
   flex-wrap: wrap;
   gap: 0.6rem;
+  width: 100%;
   animation: rise-in 0.55s var(--ease-snap) 0.12s both;
 }
 
@@ -714,6 +776,7 @@
   display: flex;
   flex-wrap: wrap;
   gap: 0.4rem;
+  max-width: 100%;
   animation: rise-in 0.55s var(--ease-snap) 0.05s both;
 }
 
@@ -723,8 +786,9 @@
   background: rgba(255, 255, 255, 0.9);
   color: var(--ink);
   border-radius: 6px;
-  padding: 0.38rem 0.72rem;
-  font-size: 0.8rem;
+  min-height: var(--touch-min);
+  padding: 0.55rem 0.85rem;
+  font-size: var(--step--1);
   font-weight: 600;
   cursor: pointer;
   transition:
@@ -753,24 +817,37 @@
 .round-pdp {
   width: min(1180px, 100%);
   margin: 0 auto;
-  padding: 0.75rem 1rem 2.5rem;
+  padding: 0.75rem var(--page-pad-x) 2.5rem;
   background: #fff;
   animation: stage-in 0.45s var(--ease-snap) both;
+  min-width: 0;
+  max-width: 100%;
+  overflow: hidden;
+}
+
+.ladder-rung-active.round-pdp {
+  padding-left: var(--page-pad-x);
+  padding-right: var(--page-pad-x);
 }
 
 .breadcrumb {
   margin: 0 0 0.85rem;
-  font-size: 0.78rem;
+  font-size: var(--step--1);
   color: #565959;
+  overflow-wrap: anywhere;
 }
 
 .pdp {
   position: relative;
   display: grid;
-  gap: 1.25rem;
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--space-3);
   align-items: start;
+  min-width: 0;
+  width: 100%;
 }
 
+/* Stack PDP columns on small screens; 3-col only at desktop */
 @media (min-width: 960px) {
   .pdp {
     grid-template-columns: minmax(240px, 0.9fr) minmax(0, 1.2fr) minmax(240px, 0.68fr);
@@ -780,8 +857,17 @@
 
 .pdp-media {
   width: 100%;
+  max-width: min(100%, 28rem);
+  justify-self: center;
   min-width: 0;
   overflow: hidden;
+}
+
+@media (min-width: 960px) {
+  .pdp-media {
+    max-width: none;
+    justify-self: stretch;
+  }
 }
 
 .pdp-center {
@@ -790,6 +876,7 @@
   align-content: start;
   min-width: 0;
   overflow: visible;
+  max-width: 100%;
 }
 
 .pdp-brand-link {
@@ -814,11 +901,21 @@
 }
 
 .pdp-buybox {
-  position: sticky;
-  top: 4.5rem;
+  position: relative;
+  top: auto;
   min-width: 0;
+  width: 100%;
+  max-width: 100%;
   z-index: 1;
-  align-self: start;
+  align-self: stretch;
+}
+
+@media (min-width: 960px) {
+  .pdp-buybox {
+    position: sticky;
+    top: 4.5rem;
+    align-self: start;
+  }
 }
 
 .buybox-shell {
@@ -993,6 +1090,9 @@
 
 button.listing-word.is-guessable {
   cursor: pointer;
+  min-height: var(--touch-min);
+  padding-top: 0.35em;
+  padding-bottom: 0.35em;
 }
 
 button.listing-word.is-guessable:hover {
@@ -1035,7 +1135,7 @@ button.listing-word.is-guessable:focus-visible {
   align-items: stretch;
   gap: 0.28rem;
   min-width: 9.5rem;
-  max-width: min(16rem, 70vw);
+  max-width: min(16rem, calc(100vw - 2 * var(--page-pad-x) - 1rem));
   padding: 0.32rem;
   border: 1px solid #d5d9d9;
   border-radius: 10px;
@@ -1072,6 +1172,7 @@ button.listing-word.is-guessable:focus-visible {
   flex: 1 1 auto;
   min-width: 0;
   width: 7rem;
+  min-height: var(--touch-min);
   padding: 0.4rem 0.5rem;
   border: 1px solid #888c8c;
   border-radius: 7px;
@@ -1095,7 +1196,8 @@ button.listing-word.is-guessable:focus-visible {
 
 .word-guess-pop-tick {
   flex: 0 0 auto;
-  min-width: 2.15rem;
+  min-width: var(--touch-min);
+  min-height: var(--touch-min);
   padding: 0 0.45rem;
   border: 1px solid #a2d45e;
   border-radius: 7px;
@@ -1231,18 +1333,23 @@ button.listing-word.is-guessable:focus-visible {
   gap: 0.45rem;
   justify-items: start;
   padding: 0.35rem 0 0.15rem;
+  width: 100%;
+  max-width: 100%;
 }
 
 .keyboard-row {
   display: flex;
   flex-wrap: wrap;
   gap: 0.32rem;
+  width: 100%;
+  max-width: 100%;
 }
 
 .key {
-  min-width: clamp(1.95rem, 4.6vw, 2.35rem);
-  height: clamp(2.45rem, 5.5vw, 2.85rem);
-  padding: 0 0.42rem;
+  min-width: max(var(--touch-min), clamp(2.2rem, 8.2vw, 2.75rem));
+  min-height: var(--touch-min);
+  height: auto;
+  padding: 0.45rem 0.42rem;
   border: 1px solid transparent;
   border-radius: 6px;
   background: linear-gradient(180deg, #ffffff 0%, #eef1f4 100%);
@@ -1252,6 +1359,7 @@ button.listing-word.is-guessable:focus-visible {
   font-weight: 700;
   letter-spacing: 0.02em;
   cursor: pointer;
+  touch-action: manipulation;
   box-shadow:
     0 2px 0 var(--line-strong),
     var(--shadow-sm);
@@ -1431,7 +1539,8 @@ button.listing-word.is-guessable:focus-visible {
 }
 
 .price-input {
-  width: min(10rem, 44vw);
+  width: min(10rem, 100%);
+  min-height: var(--touch-min);
   padding: 0.75rem 0.85rem;
   border: 2px solid var(--navy);
   border-radius: var(--radius-sm);
@@ -1612,6 +1721,7 @@ button.listing-word.is-guessable:focus-visible {
 .title-guess-input {
   flex: 1 1 10rem;
   min-width: 0;
+  min-height: var(--touch-min);
   padding: 0.65rem 0.75rem;
   border: 1px solid #888c8c;
   border-radius: 8px;
@@ -1690,6 +1800,7 @@ button.listing-word.is-guessable:focus-visible {
   appearance: none;
   border: 1px solid transparent;
   border-radius: 20px;
+  min-height: var(--touch-min);
   padding: 0.7rem 1.3rem;
   font-family: var(--font-body);
   font-size: 0.95rem;
@@ -1699,6 +1810,7 @@ button.listing-word.is-guessable:focus-visible {
   display: inline-flex;
   align-items: center;
   justify-content: center;
+  touch-action: manipulation;
   transition:
     filter 0.12s ease,
     transform 0.12s var(--ease-snap),
@@ -1822,25 +1934,120 @@ button.listing-word.is-guessable:focus-visible {
   }
 }
 
-@media (max-width: 520px) {
-  .key {
-    min-width: 1.75rem;
-    height: 2.35rem;
-    font-size: 0.8rem;
+/* —— Mobile / narrow: no-overlap layout —— */
+@media (max-width: 720px) {
+  .brand-bar {
+    font-size: clamp(1.2rem, 5.5vw, 1.45rem);
   }
 
+  .mode-pill,
+  .speed-pill {
+    font-size: 0.7rem;
+    padding: 0.35rem 0.5rem;
+    max-width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
 
-  .price-panel,
-  .reveal-panel {
-    justify-items: center;
-    text-align: center;
+  .hero-lobby {
+    min-height: min(68svh, 560px);
+  }
+
+  .ladder-rung-done,
+  .ladder-rung-locked {
+    grid-template-columns: 56px minmax(0, 1fr);
+  }
+
+  .rung-done-media {
+    width: 56px;
+    height: 56px;
+  }
+
+  .rung-locked-media {
+    width: 56px;
+    height: 56px;
+  }
+
+  .rung-done-title {
+    overflow-wrap: anywhere;
+  }
+
+  .listing-title {
+    font-size: clamp(1rem, 4.2vw, 1.25rem);
   }
 
   .keyboard {
-    justify-items: center;
+    justify-items: stretch;
   }
 
-  .round-top {
-    justify-content: center;
+  .keyboard-row {
+    justify-content: flex-start;
+  }
+
+  .key {
+    flex: 0 0 auto;
+    font-size: 0.88rem;
+  }
+
+  .title-guess-row,
+  .price-input-row,
+  .reveal-actions,
+  .hero-actions {
+    width: 100%;
+  }
+
+  .title-guess-submit,
+  .btn-cart,
+  .hero-actions .btn {
+    width: 100%;
+    max-width: 100%;
+  }
+
+  .buybox-shell,
+  .buybox {
+    max-width: 100%;
+  }
+
+  .word-guess-pop {
+    /* Keep bubble on-screen; edge words still use absolute — flagged as outlier */
+    max-width: min(15rem, calc(100vw - 1.5rem));
+  }
+}
+
+@media (max-width: 520px) {
+  .price-panel,
+  .reveal-panel {
+    justify-items: stretch;
+    text-align: left;
+    width: 100%;
+  }
+
+  .score-ring {
+    justify-self: start;
+  }
+
+  .death-score-form {
+    width: min(20rem, 100%);
+  }
+
+  .scroll-board-avgs {
+    font-size: 0.78rem;
+  }
+
+  .subnav {
+    gap: 0.75rem;
+  }
+}
+
+/* Very narrow phones: keep keys ≥44px even if rows wrap more */
+@media (max-width: 380px) {
+  .key {
+    min-width: var(--touch-min);
+    padding-inline: 0.28rem;
+    font-size: 0.82rem;
+  }
+
+  .topbar-meta {
+    max-width: 48%;
   }
 }
