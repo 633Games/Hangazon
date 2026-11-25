@@ -1,17 +1,18 @@
-import { useEffect, useRef, type CSSProperties } from 'react'
+import { useEffect, useRef, useState, type CSSProperties } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
 import { CategoryChips } from './components/CategoryChips'
-import { Lives } from './components/Lives'
 import { Keyboard } from './components/Keyboard'
+import { Leaderboard } from './components/Leaderboard'
 import { LetterBoard } from './components/LetterBoard'
+import { Lives } from './components/Lives'
 import { PriceGuess } from './components/PriceGuess'
 import { Reveal } from './components/Reveal'
 import { Stars } from './components/Stars'
 import { TitleGuess } from './components/TitleGuess'
 import { ZoomedProduct } from './components/ZoomedProduct'
 import { useHangazonRound } from './hooks/useHangazonRound'
-import { formatMoney } from './lib/scoring'
 import type { LadderHistoryEntry } from './lib/ladder'
+import { formatMoney } from './lib/scoring'
 import './App.css'
 
 function ClearedRung({
@@ -56,6 +57,7 @@ function ClearedRung({
 export default function App() {
   const game = useHangazonRound()
   const activeRungRef = useRef<HTMLElement | null>(null)
+  const [playerName, setPlayerName] = useState('')
   const revealed =
     game.phase === 'reveal' || game.letterOutcome === 'guess'
   const titleKnown =
@@ -65,10 +67,15 @@ export default function App() {
   const bloodied = game.letterOutcome === 'lose'
   const showDeath =
     bloodied && game.phase === 'letters'
+  const onLobby =
+    game.phase === 'intro' || game.phase === 'scoreboard'
   const vibrating =
     game.phase === 'letters' &&
     game.letterOutcome === null &&
     game.typeSpeed > 2
+
+  const runClears = game.pendingResult?.clears ?? game.clears
+  const runAvg = game.pendingResult?.avgPct ?? 0
 
   useEffect(() => {
     if (game.phase !== 'letters') return
@@ -91,7 +98,7 @@ export default function App() {
   }, [game.phase, game.letterOutcome, game.guessLetter])
 
   useEffect(() => {
-    if (game.phase === 'intro') return
+    if (onLobby) return
     if (game.scrollToken === 0) return
     const el = activeRungRef.current
     if (!el) return
@@ -104,7 +111,7 @@ export default function App() {
         block: 'start',
       })
     })
-  }, [game.scrollToken, game.phase, game.product.id])
+  }, [game.scrollToken, game.phase, game.product.id, onLobby])
 
   return (
     <div
@@ -145,14 +152,35 @@ export default function App() {
           <p id="you-died-label" className="you-died">
             YOU DIED
           </p>
-          <p className="death-sub">Climb over · Clears reset</p>
-          <button
-            type="button"
-            className="btn btn-ghost death-next"
-            onClick={game.endClimbAfterDeath}
+          <p className="death-sub">
+            Scroll over · {runClears} clear{runClears === 1 ? '' : 's'} · Avg{' '}
+            {runAvg}%
+          </p>
+          <form
+            className="death-score-form"
+            onSubmit={(e) => {
+              e.preventDefault()
+              game.submitScrollScore(playerName)
+              setPlayerName('')
+            }}
           >
-            Start again
-          </button>
+            <label className="death-name-label" htmlFor="scroll-player-name">
+              Name for the board
+            </label>
+            <input
+              id="scroll-player-name"
+              className="death-name-input"
+              value={playerName}
+              onChange={(e) => setPlayerName(e.target.value)}
+              maxLength={24}
+              autoComplete="nickname"
+              placeholder="Your name"
+              autoFocus
+            />
+            <button type="submit" className="btn btn-ghost death-next">
+              Save score
+            </button>
+          </form>
         </div>
       )}
 
@@ -163,7 +191,7 @@ export default function App() {
           <span className="topbar-field">Search Hangazon</span>
           <span className="topbar-go">Go</span>
         </div>
-        {game.phase !== 'intro' && (
+        {!onLobby && (
           <div className="topbar-meta">
             {game.phase === 'letters' && game.typeSpeed > 1 && (
               <span
@@ -192,32 +220,62 @@ export default function App() {
         <span>Fashion</span>
       </div>
 
-      {game.phase === 'intro' ? (
-        <section className="hero">
-          <div className="hero-visual" aria-hidden>
-            <img src={game.product.imageUrl} alt="" className="hero-img" />
-          </div>
-          <div className="hero-copy">
-            <p className="brand brand-hero">Hangazon</p>
-            <p className="hero-tag">
-              Clear listings to climb. Fail once and the run is over.
-            </p>
-            <CategoryChips value={game.category} onChange={game.setCategory} />
-            <div className="hero-actions">
+      {onLobby ? (
+        <div className="lobby">
+          {game.phase === 'intro' ? (
+            <section className="hero hero-lobby">
+              <div className="hero-visual" aria-hidden>
+                <img src={game.product.imageUrl} alt="" className="hero-img" />
+              </div>
+              <div className="hero-copy">
+                <p className="brand brand-hero">Hangazon</p>
+                <p className="hero-tag">
+                  Clear listings on a Scroll. Fail once and the run is over.
+                </p>
+                <CategoryChips
+                  value={game.category}
+                  onChange={game.setCategory}
+                />
+                <div className="hero-actions">
+                  <button
+                    type="button"
+                    className="btn btn-primary btn-lg"
+                    onClick={() => game.startScroll(game.category)}
+                  >
+                    Start Scroll
+                  </button>
+                </div>
+              </div>
+            </section>
+          ) : (
+            <section className="scoreboard-hero">
+              <p className="brand brand-bar scoreboard-brand">Hangazon</p>
+              <h1 className="scoreboard-title">Scroll over</h1>
+              <p className="scoreboard-tag">
+                Your run is on the board. Start another Scroll from listing 1.
+              </p>
               <button
                 type="button"
                 className="btn btn-primary btn-lg"
-                onClick={() => game.startClimb(game.category)}
+                onClick={() => game.startScroll(game.category)}
               >
-                Start climb
+                Start Scroll
               </button>
-            </div>
+            </section>
+          )}
+          <div className="lobby-board">
+            <Leaderboard
+              entries={game.board}
+              boardAvg={game.boardAvgPct}
+              localAvg={game.localAvgPct}
+              highlightId={game.lastBoardId}
+            />
           </div>
-        </section>
+        </div>
       ) : (
         <main className="ladder">
           <p className="ladder-goal">
-            Clear each listing to unlock the next. One fail ends the climb —
+            Clear each listing to unlock the next. One fail ends the Scroll —
             back to listing 1.
           </p>
 
@@ -232,7 +290,7 @@ export default function App() {
             aria-label={`Listing ${game.history.length + 1} — active`}
           >
             <p className="breadcrumb">
-              Hangazon › Ladder › #{game.history.length + 1} ›{' '}
+              Hangazon › Scroll › #{game.history.length + 1} ›{' '}
               {game.product.category}
             </p>
 

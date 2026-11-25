@@ -21,8 +21,21 @@ import {
   finalScore,
 } from '../lib/scoring'
 import { openProduct } from '../lib/vault'
+import {
+  addLocalRun,
+  averagePct,
+  boardAveragePct,
+  loadBoard,
+  localRunsAveragePct,
+  type BoardEntry,
+} from '../lib/leaderboard'
 
-export type Phase = 'intro' | 'letters' | 'price' | 'reveal'
+export type Phase = 'intro' | 'letters' | 'price' | 'reveal' | 'scoreboard'
+
+export type PendingScrollResult = {
+  clears: number
+  avgPct: number
+}
 
 export type LetterFlight = {
   id: number
@@ -62,6 +75,11 @@ export function useHangazonRound() {
   const [clears, setClears] = useState(0)
   const [bestClears, setBestClears] = useState(0)
   const [scrollToken, setScrollToken] = useState(0)
+  const [board, setBoard] = useState<BoardEntry[]>(() => loadBoard())
+  const [lastBoardId, setLastBoardId] = useState<string | null>(null)
+  const [pendingResult, setPendingResult] = useState<PendingScrollResult | null>(
+    null,
+  )
 
   const product = useMemo(
     () => openActive(ladder, activeIndex),
@@ -106,6 +124,8 @@ export function useHangazonRound() {
   clearsRef.current = clears
   const bestRef = useRef(bestClears)
   bestRef.current = bestClears
+  const historyRef = useRef(history)
+  historyRef.current = history
   const unlockGenRef = useRef(0)
   const ladderRef = useRef(ladder)
   ladderRef.current = ladder
@@ -175,15 +195,27 @@ export function useHangazonRound() {
     comboRef.current = 0
   }, [])
 
-  const startClimb = useCallback(
+  const boardAvgPct = useMemo(() => boardAveragePct(board), [board])
+  const localAvgPct = useMemo(() => localRunsAveragePct(board), [board])
+
+  const snapshotPendingRun = useCallback(() => {
+    setPendingResult({
+      clears: clearsRef.current,
+      avgPct: averagePct(historyRef.current.map((e) => e.priceScore)),
+    })
+  }, [])
+
+  const startScroll = useCallback(
     (filter: CategoryFilter = category) => {
       const nextLadder = buildLadder(filter)
       setCategory(filter)
       setLadder(nextLadder)
       setActiveIndex(0)
       setHistory([])
+      historyRef.current = []
       setClears(0)
       clearsRef.current = 0
+      setPendingResult(null)
       resetActiveBoard()
       setPhase('letters')
       setScrollToken((t) => t + 1)
@@ -249,6 +281,7 @@ export function useHangazonRound() {
       } else {
         setLetterOutcome('lose')
         outcomeRef.current = 'lose'
+        snapshotPendingRun()
       }
       return
     }
@@ -268,7 +301,7 @@ export function useHangazonRound() {
     setFlightBusy(false)
     setTypeSpeed(1)
     comboRef.current = 0
-  }, [title, bumpSpeed, beginFlight])
+  }, [title, bumpSpeed, beginFlight, snapshotPendingRun])
 
   const clearFlights = useCallback(() => {
     setQueue([])
@@ -303,24 +336,45 @@ export function useHangazonRound() {
       clearFlights()
       setLetterOutcome('lose')
       outcomeRef.current = 'lose'
+      snapshotPendingRun()
     }
-  }, [clearFlights])
+  }, [clearFlights, snapshotPendingRun])
 
   /**
-   * Roguelike: YOU DIED ends the whole climb.
-   * Clears reset; back to intro — must Start climb again from listing 1.
+   * Post name + run to the (fake + local) leaderboard, then show the board.
+   * Clears reset; next Start Scroll begins from listing 1.
    */
-  const endClimbAfterDeath = useCallback(() => {
-    if (outcomeRef.current !== 'lose') return
-    unlockGenRef.current += 1
-    clearsRef.current = 0
-    setClears(0)
-    setHistory([])
-    setActiveIndex(0)
-    setLadder(buildLadder(categoryRef.current))
-    resetActiveBoard()
-    setPhase('intro')
-  }, [resetActiveBoard])
+  const submitScrollScore = useCallback(
+    (rawName: string) => {
+      if (outcomeRef.current !== 'lose') return
+      const snapshot =
+        pendingResult ??
+        ({
+          clears: clearsRef.current,
+          avgPct: averagePct(historyRef.current.map((e) => e.priceScore)),
+        } satisfies PendingScrollResult)
+
+      const saved = addLocalRun({
+        name: rawName,
+        clears: snapshot.clears,
+        avgPct: snapshot.avgPct,
+      })
+      setLastBoardId(saved.id)
+      setBoard(loadBoard())
+
+      unlockGenRef.current += 1
+      clearsRef.current = 0
+      setClears(0)
+      setHistory([])
+      historyRef.current = []
+      setActiveIndex(0)
+      setLadder(buildLadder(categoryRef.current))
+      setPendingResult(null)
+      resetActiveBoard()
+      setPhase('scoreboard')
+    },
+    [pendingResult, resetActiveBoard],
+  )
 
   const submitTitleGuess = useCallback(() => {
     if (phase !== 'letters' || outcomeRef.current !== null) return
@@ -377,10 +431,14 @@ export function useHangazonRound() {
       if (unlockGenRef.current !== expectedGen) return
       unlockGenRef.current += 1
 
-      // Only clears unlock the next rung — a fail ends the climb via endClimbAfterDeath.
+      // Only clears unlock the next rung — a fail ends the Scroll via score entry.
       if (entry.result !== 'cleared') return
 
-      setHistory((h) => [...h, entry])
+      setHistory((h) => {
+        const next = [...h, entry]
+        historyRef.current = next
+        return next
+      })
 
       const nextClears = clearsRef.current + 1
       clearsRef.current = nextClears
@@ -396,7 +454,7 @@ export function useHangazonRound() {
       if (nextIdx < currentLadder.length) {
         setActiveIndex(nextIdx)
       } else {
-        // Loop: fresh shuffle of the same aisle, keep climbing
+        // Loop: fresh shuffle of the same aisle, keep scrolling
         const nextLadder = buildLadder(categoryRef.current)
         setLadder(nextLadder)
         setActiveIndex(0)
@@ -494,6 +552,11 @@ export function useHangazonRound() {
     clears,
     bestClears,
     scrollToken,
+    board,
+    boardAvgPct,
+    localAvgPct,
+    lastBoardId,
+    pendingResult,
     guessed,
     misses,
     letterOutcome,
@@ -509,10 +572,10 @@ export function useHangazonRound() {
     queue,
     typeSpeed,
     pendingLetters,
-    startClimb,
+    startScroll,
     guessLetter,
     finishFlight,
-    endClimbAfterDeath,
+    submitScrollScore,
     submitTitleGuess,
     submitWordGuess,
     submitPrice,

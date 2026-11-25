@@ -130,14 +130,49 @@
   animation: you-died-in 0.55s 0.06s var(--ease-snap) both;
 }
 
+.death-score-form {
+  margin-top: 0.85rem;
+  display: grid;
+  gap: 0.45rem;
+  justify-items: center;
+  width: min(18rem, 100%);
+  animation: you-died-in 0.55s 0.1s var(--ease-snap) both;
+}
+
+.death-name-label {
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: rgba(255, 230, 230, 0.72);
+}
+
+.death-name-input {
+  width: 100%;
+  padding: 0.55rem 0.7rem;
+  border: 1px solid rgba(255, 190, 190, 0.35);
+  border-radius: 4px;
+  background: rgba(12, 2, 4, 0.72);
+  color: #fff6f6;
+  font: inherit;
+  font-weight: 600;
+  text-align: center;
+}
+
+.death-name-input::placeholder {
+  color: rgba(255, 220, 220, 0.45);
+}
+
+.death-name-input:focus {
+  outline: 2px solid rgba(255, 200, 200, 0.55);
+  outline-offset: 2px;
+}
+
 .death-next {
-  margin-top: 0.75rem;
+  margin-top: 0.35rem;
   min-width: 8rem;
   border-radius: 20px;
   border-color: rgba(255, 190, 190, 0.4);
   color: #ffe8e8;
   background: rgba(28, 4, 8, 0.72);
-  animation: you-died-in 0.55s 0.12s var(--ease-snap) both;
 }
 
 .death-next:hover {
@@ -313,7 +348,145 @@
   font-variant-numeric: tabular-nums;
 }
 
-/* —— Ladder climb —— */
+/* —— Lobby / Scroll board —— */
+.lobby {
+  display: grid;
+  gap: 0;
+}
+
+.hero-lobby {
+  min-height: min(72svh, 640px);
+}
+
+.lobby-board {
+  width: min(720px, 100%);
+  margin: -1.5rem auto 2.5rem;
+  padding: 0 1rem;
+  position: relative;
+  z-index: 2;
+}
+
+.scoreboard-hero {
+  padding: clamp(1.5rem, 4vw, 2.5rem) 1.25rem 1rem;
+  display: grid;
+  gap: 0.55rem;
+  justify-items: start;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.92), rgba(244, 246, 248, 0.88)),
+    radial-gradient(ellipse at 20% 0%, rgba(255, 216, 20, 0.22), transparent 55%);
+  border-bottom: 1px solid var(--line);
+}
+
+.scoreboard-brand {
+  margin: 0;
+}
+
+.scoreboard-title {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: clamp(2rem, 5vw, 2.8rem);
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  color: var(--navy);
+}
+
+.scoreboard-tag {
+  margin: 0 0 0.35rem;
+  max-width: 28rem;
+  font-size: 1.02rem;
+  font-weight: 600;
+  color: var(--ink-soft);
+}
+
+.scroll-board {
+  padding: 0.85rem 1rem 1rem;
+  background: #fff;
+  border: 1px solid var(--line);
+  box-shadow: var(--shadow-md);
+}
+
+.scroll-board-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.45rem 1rem;
+  margin-bottom: 0.65rem;
+  padding-bottom: 0.55rem;
+  border-bottom: 2px solid var(--lemon);
+}
+
+.scroll-board-title {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: 1.15rem;
+  font-weight: 800;
+  color: var(--navy);
+}
+
+.scroll-board-avgs {
+  margin: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--ink-soft);
+  font-variant-numeric: tabular-nums;
+}
+
+.scroll-board-avgs strong {
+  color: var(--navy);
+  font-weight: 800;
+}
+
+.scroll-board-avgs-sep {
+  opacity: 0.5;
+}
+
+.scroll-board-table-wrap {
+  overflow-x: auto;
+}
+
+.scroll-board-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.9rem;
+  font-variant-numeric: tabular-nums;
+}
+
+.scroll-board-table th {
+  text-align: left;
+  padding: 0.35rem 0.4rem;
+  font-size: 0.72rem;
+  font-weight: 800;
+  color: var(--ink-soft);
+  border-bottom: 1px solid var(--line);
+}
+
+.scroll-board-table td {
+  padding: 0.45rem 0.4rem;
+  border-bottom: 1px solid rgba(35, 47, 62, 0.08);
+  font-weight: 600;
+  color: var(--ink);
+}
+
+.scroll-board-table tr.is-you {
+  background: rgba(255, 216, 20, 0.28);
+}
+
+.scroll-board-table tr.is-local:not(.is-you) {
+  background: rgba(255, 216, 20, 0.1);
+}
+
+.scroll-board-you {
+  font-size: 0.72rem;
+  font-weight: 800;
+  color: var(--accent-deep);
+  text-transform: lowercase;
+}
+
+/* —— Scroll ladder —— */
 .ladder {
   width: min(1180px, 100%);
   margin: 0 auto;

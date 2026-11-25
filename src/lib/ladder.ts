@@ -17,7 +17,7 @@ export function shuffleProducts<T>(list: readonly T[]): T[] {
   return next
 }
 
-/** Ladder order for a climb — aisle filter, then shuffle, then seal. */
+/** Ladder order for a Scroll — aisle filter, then shuffle, then seal. */
 export function buildLadder(filter: CategoryFilter = 'All'): SealedProduct[] {
   const pool = productsIn(filter)
   const open = shuffleProducts(pool.length > 0 ? pool : productsIn('All'))
