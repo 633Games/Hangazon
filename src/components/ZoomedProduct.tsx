@@ -1,4 +1,5 @@
-import { motion } from 'framer-motion'
+import { motion, useAnimationControls } from 'framer-motion'
+import { useEffect } from 'react'
 import { zoomScale } from '../lib/hangman'
 
 type Props = {
@@ -17,18 +18,18 @@ export function ZoomedProduct({
   shakeKey,
 }: Props) {
   const scale = zoomScale(misses, revealed)
+  const shake = useAnimationControls()
+
+  useEffect(() => {
+    if (shakeKey <= 0 || revealed) return
+    void shake.start({
+      x: [0, -10, 10, -6, 6, 0],
+      transition: { duration: 0.35 },
+    })
+  }, [shakeKey, revealed, shake])
 
   return (
-    <motion.div
-      className="zoom-stage"
-      key={shakeKey}
-      animate={
-        shakeKey > 0 && !revealed
-          ? { x: [0, -10, 10, -6, 6, 0] }
-          : { x: 0 }
-      }
-      transition={{ duration: 0.35 }}
-    >
+    <motion.div className="zoom-stage" animate={shake}>
       <div className="zoom-frame">
         <motion.img
           src={imageUrl}
@@ -36,7 +37,9 @@ export function ZoomedProduct({
           className="zoom-image"
           animate={{
             scale,
-            filter: revealed ? 'blur(0px)' : `blur(${Math.max(0, 2.5 - misses * 0.35)}px)`,
+            filter: revealed
+              ? 'blur(0px)'
+              : `blur(${Math.max(0, 2.5 - misses * 0.35)}px)`,
           }}
           transition={{ type: 'spring', stiffness: 120, damping: 18 }}
           draggable={false}

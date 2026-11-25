@@ -84,7 +84,7 @@ export const PRODUCTS: Product[] = [
     price: 16.5,
     asin: 'B0CXYZ0008',
     imageUrl:
-      'https://images.unsplash.com/photo-1514228742587-6b1558fcc036?auto=format&fit=crop&w=1200&q=80',
+      'https://images.unsplash.com/photo-1514432324607-a09d9b4aefdd?auto=format&fit=crop&w=1200&q=80',
     category: 'Home',
   },
   {
@@ -111,7 +111,7 @@ export const PRODUCTS: Product[] = [
     price: 22.0,
     asin: 'B0CXYZ0011',
     imageUrl:
-      'https://images.unsplash.com/photo-1603006905004-2aa9c997fc94?auto=format&fit=crop&w=1200&q=80',
+      'https://images.unsplash.com/photo-1478144592103-25e218a04891?auto=format&fit=crop&w=1200&q=80',
     category: 'Home',
   },
   {

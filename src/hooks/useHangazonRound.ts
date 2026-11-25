@@ -29,7 +29,7 @@ export function useHangazonRound() {
 
   const guessLetter = useCallback(
     (raw: string) => {
-      if (phase !== 'letters') return
+      if (phase !== 'letters' || letterOutcome !== null) return
       const letter = raw.toUpperCase()
       if (!/^[A-Z]$/.test(letter) || guessed.has(letter)) return
 
@@ -52,7 +52,7 @@ export function useHangazonRound() {
         window.setTimeout(() => setPhase('price'), 700)
       }
     },
-    [phase, guessed, title, misses],
+    [phase, letterOutcome, guessed, title, misses],
   )
 
   const submitPrice = useCallback(() => {
