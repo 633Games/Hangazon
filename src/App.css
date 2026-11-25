@@ -299,6 +299,185 @@
   animation: brand-in 0.55s var(--ease-snap) both;
 }
 
+.hero-tag {
+  margin: 0;
+  max-width: 28rem;
+  font-size: clamp(1.05rem, 2.4vw, 1.25rem);
+  font-weight: 600;
+  line-height: 1.35;
+  color: var(--ink);
+  animation: rise-in 0.55s var(--ease-snap) 0.04s both;
+}
+
+.streak-pill {
+  font-variant-numeric: tabular-nums;
+}
+
+/* —— Ladder climb —— */
+.ladder {
+  width: min(1180px, 100%);
+  margin: 0 auto;
+  padding: 0.85rem 1rem 3rem;
+  display: grid;
+  gap: 0.85rem;
+  scroll-padding-top: 4.5rem;
+}
+
+.ladder-goal {
+  margin: 0;
+  padding: 0.55rem 0.75rem;
+  font-size: 0.92rem;
+  font-weight: 600;
+  color: var(--navy-2);
+  background: linear-gradient(90deg, rgba(255, 216, 20, 0.28), rgba(255, 216, 20, 0.06));
+  border-left: 3px solid var(--lemon-deep);
+}
+
+.ladder-rung {
+  scroll-margin-top: 4.5rem;
+}
+
+.ladder-rung-active {
+  width: 100%;
+  margin: 0;
+  padding: 0.85rem 1rem 2rem;
+  background: #fff;
+  border: 1px solid var(--line);
+  box-shadow: var(--shadow-md);
+  animation: stage-in 0.45s var(--ease-snap) both;
+}
+
+.ladder-rung-done {
+  display: grid;
+  grid-template-columns: 72px minmax(0, 1fr);
+  gap: 0.85rem;
+  align-items: center;
+  padding: 0.7rem 0.85rem;
+  background: #fff;
+  border: 1px solid var(--line);
+}
+
+.ladder-rung-done.is-failed {
+  opacity: 0.78;
+  border-color: rgba(196, 30, 42, 0.28);
+}
+
+.rung-done-media {
+  width: 72px;
+  height: 72px;
+  overflow: hidden;
+  background: var(--tile);
+}
+
+.rung-done-media img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+.rung-done-copy {
+  min-width: 0;
+  display: grid;
+  gap: 0.2rem;
+}
+
+.rung-done-meta {
+  margin: 0;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.45rem;
+  font-size: 0.78rem;
+  font-weight: 700;
+}
+
+.rung-step {
+  color: var(--ink-soft);
+  font-variant-numeric: tabular-nums;
+}
+
+.rung-badge {
+  padding: 0.12rem 0.4rem;
+  border-radius: 3px;
+  font-size: 0.72rem;
+  letter-spacing: 0.01em;
+}
+
+.rung-badge.is-clear {
+  background: var(--hit-bg);
+  color: var(--hit);
+}
+
+.rung-badge.is-fail {
+  background: #fde8ea;
+  color: #a1121f;
+}
+
+.rung-done-score {
+  margin-left: auto;
+  font-variant-numeric: tabular-nums;
+  color: var(--navy);
+}
+
+.rung-done-title {
+  margin: 0;
+  font-size: 0.95rem;
+  font-weight: 700;
+  line-height: 1.25;
+  color: var(--ink);
+}
+
+.rung-done-price {
+  margin: 0;
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: var(--price);
+}
+
+.rung-done-guess {
+  font-weight: 600;
+  color: var(--ink-soft);
+}
+
+.ladder-rung-locked {
+  display: grid;
+  grid-template-columns: 64px minmax(0, 1fr);
+  gap: 0.75rem;
+  align-items: center;
+  padding: 0.65rem 0.85rem;
+  border: 1px dashed var(--line-strong);
+  background:
+    linear-gradient(180deg, rgba(244, 246, 248, 0.92), rgba(227, 231, 237, 0.85));
+  opacity: 0.72;
+  filter: grayscale(0.35);
+}
+
+.rung-locked-media {
+  width: 64px;
+  height: 64px;
+  overflow: hidden;
+  background: var(--tile);
+}
+
+.rung-locked-media img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  filter: blur(2px);
+  transform: scale(1.05);
+}
+
+.rung-locked-copy {
+  min-width: 0;
+}
+
+.rung-locked-hint {
+  margin: 0.15rem 0 0;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--ink-soft);
+}
+
 /* —— Hero —— */
 .hero {
   position: relative;

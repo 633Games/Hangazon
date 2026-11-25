@@ -26,11 +26,13 @@ npm run preview
 
 ## Play
 
-- **Daily** — date-hashed aisle + listing
-- **Random** — aisle chips filter the catalog
+- **Ladder** — clear a listing to unlock the next; aisle chips filter the climb
+- Goal: get as many clears as you can (streak shown in the top bar)
+- Page scrolls to each newly unlocked listing
 - Letter scan on the keyboard, or type the full listing title in the buy box (**Guess**)
 - Correct early title guess keeps blank-slot bonus for the price score
 - Fast-type: queue keys; 2→2× scan, 3→3×, …
+- Out of attempts → blood / YOU DIED (streak breaks), then continue the ladder
 
 ## Stack
 
