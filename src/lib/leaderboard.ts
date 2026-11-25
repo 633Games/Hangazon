@@ -114,6 +114,30 @@ export function loadBoard(): BoardEntry[] {
   return sortBoard([...FAKE_BOARD, ...local])
 }
 
+/**
+ * Nudge fake (non-local) rows so the home board feels live.
+ * Local player runs are left alone.
+ */
+export function tickFakeScores(
+  entries: readonly BoardEntry[],
+): BoardEntry[] {
+  const next = entries.map((e) => {
+    if (e.local) return e
+    if (!e.id.startsWith('fake-')) return e
+    if (Math.random() > 0.55) return e
+    const clearsDelta =
+      Math.random() < 0.4 ? (Math.random() < 0.55 ? 1 : -1) : 0
+    const avgDelta = Math.round((Math.random() - 0.42) * 8)
+    return {
+      ...e,
+      clears: Math.max(0, Math.min(24, e.clears + clearsDelta)),
+      avgPct: Math.max(0, Math.min(100, e.avgPct + avgDelta)),
+      at: Date.now(),
+    }
+  })
+  return sortBoard(next)
+}
+
 export function boardAveragePct(entries: readonly BoardEntry[]): number {
   if (entries.length === 0) return 0
   return averagePct(entries.map((e) => e.avgPct))

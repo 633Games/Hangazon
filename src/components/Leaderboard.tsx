@@ -13,7 +13,7 @@ export function Leaderboard({
   boardAvg,
   localAvg,
   highlightId,
-  title = 'Scroll leaderboard',
+  title = 'Climb leaderboard',
 }: Props) {
   return (
     <section className="scroll-board" aria-label={title}>

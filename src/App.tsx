@@ -1,6 +1,5 @@
 import { useEffect, useRef, useState, type CSSProperties } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
-import { CategoryChips } from './components/CategoryChips'
 import { Keyboard } from './components/Keyboard'
 import { Leaderboard } from './components/Leaderboard'
 import { LetterBoard } from './components/LetterBoard'
@@ -184,23 +183,22 @@ export default function App() {
         </div>
       )}
 
-      <header className="topbar">
-        <a className="brand-logo-link" href={`${import.meta.env.BASE_URL}`} aria-label="Hangazon">
-          <img
-            className="brand-logo"
-            src={`${import.meta.env.BASE_URL}hangazon-logo.png`}
-            alt="Hangazon"
-            width={160}
-            height={125}
-            decoding="async"
-          />
-        </a>
-        <div className="topbar-search" aria-hidden>
-          <span className="topbar-dept">All</span>
-          <span className="topbar-field">Search Hangazon</span>
-          <span className="topbar-go">Go</span>
-        </div>
-        {!onLobby && (
+      {!onLobby && (
+        <header className="topbar">
+          <a
+            className="brand-logo-link"
+            href={`${import.meta.env.BASE_URL}`}
+            aria-label="Hangazon"
+          >
+            <img
+              className="brand-logo"
+              src={`${import.meta.env.BASE_URL}hangazon-logo-on-dark.png`}
+              alt="Hangazon"
+              width={160}
+              height={125}
+              decoding="async"
+            />
+          </a>
           <div className="topbar-meta">
             {game.phase === 'letters' && game.typeSpeed > 1 && (
               <span
@@ -218,60 +216,28 @@ export default function App() {
               {game.bestClears > 0 ? ` · best ${game.bestClears}` : ''}
             </span>
           </div>
-        )}
-      </header>
-      <div className="subnav" aria-hidden>
-        <span>Electronics</span>
-        <span>Kitchen</span>
-        <span>Home</span>
-        <span>Fitness</span>
-        <span>Travel</span>
-        <span>Fashion</span>
-      </div>
+        </header>
+      )}
 
       {onLobby ? (
         <div className="lobby">
-          {game.phase === 'intro' ? (
-            <section className="hero hero-lobby">
-              <div className="hero-visual" aria-hidden>
-                <img src={game.product.imageUrl} alt="" className="hero-img" />
-              </div>
-              <div className="hero-copy">
-                <p className="brand brand-hero">Hangazon</p>
-                <p className="hero-tag">
-                  Clear listings on a Scroll. Fail once and the run is over.
-                </p>
-                <CategoryChips
-                  value={game.category}
-                  onChange={game.setCategory}
-                />
-                <div className="hero-actions">
-                  <button
-                    type="button"
-                    className="btn btn-primary btn-lg"
-                    onClick={() => game.startScroll(game.category)}
-                  >
-                    Start Scroll
-                  </button>
-                </div>
-              </div>
-            </section>
-          ) : (
-            <section className="scoreboard-hero">
-              <p className="brand brand-bar scoreboard-brand">Hangazon</p>
-              <h1 className="scoreboard-title">Scroll over</h1>
-              <p className="scoreboard-tag">
-                Your run is on the board. Start another Scroll from listing 1.
-              </p>
-              <button
-                type="button"
-                className="btn btn-primary btn-lg"
-                onClick={() => game.startScroll(game.category)}
-              >
-                Start Scroll
-              </button>
-            </section>
-          )}
+          <section className="climb-home" aria-label="Hangazon Climb">
+            <img
+              className="climb-home-logo"
+              src={`${import.meta.env.BASE_URL}hangazon-logo.png`}
+              alt="Hangazon"
+              width={320}
+              height={250}
+              decoding="async"
+            />
+            <button
+              type="button"
+              className="btn btn-primary btn-lg climb-home-cta"
+              onClick={() => game.startScroll('All')}
+            >
+              Start the Climb
+            </button>
+          </section>
           <div className="lobby-board">
             <Leaderboard
               entries={game.board}

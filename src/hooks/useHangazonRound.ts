@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useRef, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { type CategoryFilter } from '../data/products'
 import {
   buildLadder,
@@ -26,6 +26,7 @@ import {
   averagePct,
   boardAveragePct,
   loadBoard,
+  tickFakeScores,
   localRunsAveragePct,
   type BoardEntry,
 } from '../lib/leaderboard'
@@ -222,6 +223,15 @@ export function useHangazonRound() {
     },
     [category, resetActiveBoard],
   )
+
+  /** Home/scoreboard: fake rivals drift so the board feels alive. */
+  useEffect(() => {
+    if (phase !== 'intro' && phase !== 'scoreboard') return
+    const id = window.setInterval(() => {
+      setBoard((prev) => tickFakeScores(prev))
+    }, 2600)
+    return () => window.clearInterval(id)
+  }, [phase])
 
   const guessLetter = useCallback(
     (raw: string) => {
