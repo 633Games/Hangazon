@@ -274,13 +274,14 @@
 
 @media (min-width: 960px) {
   .pdp {
-    grid-template-columns: minmax(260px, 0.95fr) minmax(280px, 1.15fr) minmax(220px, 0.72fr);
-    gap: 1.5rem;
+    grid-template-columns: minmax(240px, 0.9fr) minmax(0, 1.2fr) minmax(240px, 0.68fr);
+    gap: 1.75rem;
   }
 }
 
 .pdp-media {
   width: 100%;
+  min-width: 0;
 }
 
 .pdp-center {
@@ -288,6 +289,7 @@
   gap: 0.65rem;
   align-content: start;
   min-width: 0;
+  overflow: hidden;
 }
 
 .pdp-brand-link {
@@ -314,6 +316,9 @@
 .pdp-buybox {
   position: sticky;
   top: 4.5rem;
+  min-width: 0;
+  z-index: 1;
+  align-self: start;
 }
 
 .buybox-shell {
@@ -324,6 +329,7 @@
   box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.02);
   display: grid;
   gap: 0.55rem;
+  isolation: isolate;
 }
 
 .buybox-shell-reveal {
@@ -440,18 +446,20 @@
 /* —— Amazon listing title blanks: ___ _ __ __ —— */
 .listing-title {
   margin: 0;
+  max-width: 100%;
   font-family: var(--font-body);
-  font-size: clamp(1.15rem, 2.4vw, 1.55rem);
+  font-size: clamp(1.05rem, 2.1vw, 1.4rem);
   font-weight: 700;
-  line-height: 1.35;
+  line-height: 1.45;
   color: #0f1111;
   letter-spacing: 0.01em;
+  overflow-wrap: anywhere;
   word-break: break-word;
 }
 
 .listing-word {
   display: inline;
-  white-space: nowrap;
+  white-space: normal;
 }
 
 .listing-char {
@@ -570,33 +578,48 @@
   animation: key-pulse 0.5s ease infinite;
 }
 
-/* —— Lives + gallows —— */
-.lives {
+/* —— Attempts —— */
+.attempts {
+  display: grid;
+  gap: 0.35rem;
+}
+
+.attempts-label {
+  margin: 0;
+  font-size: 0.88rem;
+  color: #0f1111;
+  font-weight: 600;
+}
+
+.attempts-label strong {
+  color: #b12704;
+  font-variant-numeric: tabular-nums;
+}
+
+.attempts-pips {
   display: flex;
-  align-items: center;
-  gap: 0.38rem;
+  flex-wrap: wrap;
+  gap: 0.35rem;
 }
 
-.life {
-  width: 0.85rem;
-  height: 0.85rem;
-  border-radius: 50%;
-  background: radial-gradient(circle at 35% 30%, #fff6b0, var(--lemon-deep));
-  border: 1.5px solid var(--peach-deep);
-  box-shadow: 0 2px 0 rgba(212, 137, 106, 0.45);
-  transition:
-    transform 0.35s var(--ease-pop),
-    opacity 0.35s ease,
-    filter 0.35s ease;
+.attempt-pip {
+  width: 1.55rem;
+  height: 1.55rem;
+  display: grid;
+  place-content: center;
+  border-radius: 4px;
+  border: 1px solid #067d62;
+  background: #e7f7ef;
+  color: #067d62;
+  font-size: 0.78rem;
+  font-weight: 800;
+  line-height: 1;
 }
 
-.life.is-gone {
-  background: #d9d3c4;
-  border-color: #b7b0a0;
-  box-shadow: none;
-  opacity: 0.45;
-  transform: scale(0.82);
-  filter: grayscale(0.4);
+.attempt-pip.is-used {
+  border-color: #c45500;
+  background: #fde8d4;
+  color: #c45500;
 }
 
 .gallows {
