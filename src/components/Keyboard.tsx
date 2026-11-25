@@ -2,7 +2,8 @@ const ROWS = ['QWERTYUIOP', 'ASDFGHJKL', 'ZXCVBNM']
 
 type Props = {
   guessed: ReadonlySet<string>
-  title: string
+  /** Letters present in the puzzle — avoids passing the full title into this tree. */
+  titleLetters: ReadonlySet<string>
   disabled?: boolean
   pending?: ReadonlySet<string>
   onGuess: (letter: string) => void
@@ -10,7 +11,7 @@ type Props = {
 
 export function Keyboard({
   guessed,
-  title,
+  titleLetters,
   disabled,
   pending,
   onGuess,
@@ -21,7 +22,7 @@ export function Keyboard({
         <div className="keyboard-row" key={row}>
           {[...row].map((letter) => {
             const used = guessed.has(letter)
-            const hit = used && title.includes(letter)
+            const hit = used && titleLetters.has(letter)
             const miss = used && !hit
             const isPending = pending?.has(letter) ?? false
             return (

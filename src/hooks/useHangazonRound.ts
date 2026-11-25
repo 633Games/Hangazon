@@ -1,15 +1,10 @@
-import { useCallback, useMemo, useRef, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { type CategoryFilter } from '../data/products'
 import {
-  type CategoryFilter,
-  type Product,
-} from '../data/products'
-import { pickCatalogProduct } from '../lib/catalog'
-import {
-  dailyCategory,
-  dailyKey,
-  isDailyDone,
-  markDailyDone,
-} from '../lib/daily'
+  buildLadder,
+  type LadderHistoryEntry,
+  type SealedProduct,
+} from '../lib/ladder'
 import {
   isTitleSolved,
   isWordRevealed,
@@ -25,9 +20,23 @@ import {
   countLetterSlots,
   finalScore,
 } from '../lib/scoring'
+import { openProduct } from '../lib/vault'
+import {
+  addLocalRun,
+  averagePct,
+  boardAveragePct,
+  loadBoard,
+  tickFakeScores,
+  localRunsAveragePct,
+  type BoardEntry,
+} from '../lib/leaderboard'
 
-export type Phase = 'intro' | 'letters' | 'price' | 'reveal'
-export type PlayMode = 'daily' | 'random'
+export type Phase = 'intro' | 'letters' | 'price' | 'reveal' | 'scoreboard'
+
+export type PendingScrollResult = {
+  clears: number
+  avgPct: number
+}
 
 export type LetterFlight = {
   id: number
@@ -36,9 +45,10 @@ export type LetterFlight = {
   speed: number
 }
 
-const MAX_SPEED = 8
+/** Aggressive type-ahead multiplier — mash keys and flights fly. */
+const MAX_SPEED = 24
 
-function freshRoundState() {
+function freshBoard() {
   return {
     guessed: new Set<string>(),
     misses: 0,
@@ -50,19 +60,33 @@ function freshRoundState() {
   }
 }
 
+const LOCKED_PREVIEW = 2
+
+function openActive(ladder: SealedProduct[], index: number) {
+  const sealed = ladder[index] ?? ladder[0]!
+  return openProduct(sealed)
+}
+
 export function useHangazonRound() {
-  const today = dailyKey()
   const [category, setCategory] = useState<CategoryFilter>('All')
-  const [mode, setMode] = useState<PlayMode>(() =>
-    isDailyDone(today) ? 'random' : 'daily',
+  /** Sealed ladder — future rungs stay opaque in client state. */
+  const [ladder, setLadder] = useState<SealedProduct[]>(() => buildLadder('All'))
+  const [activeIndex, setActiveIndex] = useState(0)
+  const [history, setHistory] = useState<LadderHistoryEntry[]>([])
+  const [clears, setClears] = useState(0)
+  const [bestClears, setBestClears] = useState(0)
+  const [scrollToken, setScrollToken] = useState(0)
+  const [board, setBoard] = useState<BoardEntry[]>(() => loadBoard())
+  const [lastBoardId, setLastBoardId] = useState<string | null>(null)
+  const [pendingResult, setPendingResult] = useState<PendingScrollResult | null>(
+    null,
   )
-  const [dailyDone, setDailyDone] = useState(() => isDailyDone(today))
-  const [product, setProduct] = useState<Product>(() =>
-    pickCatalogProduct({
-      mode: isDailyDone(today) ? 'random' : 'daily',
-      category: 'All',
-    }),
+
+  const product = useMemo(
+    () => openActive(ladder, activeIndex),
+    [ladder, activeIndex],
   )
+
   const [phase, setPhase] = useState<Phase>('intro')
   const [guessed, setGuessed] = useState<Set<string>>(() => new Set())
   const [misses, setMisses] = useState(0)
@@ -97,12 +121,39 @@ export function useHangazonRound() {
   const comboRef = useRef(0)
   const outcomeRef = useRef(letterOutcome)
   outcomeRef.current = letterOutcome
+  const clearsRef = useRef(clears)
+  clearsRef.current = clears
+  const bestRef = useRef(bestClears)
+  bestRef.current = bestClears
+  const historyRef = useRef(history)
+  historyRef.current = history
+  const unlockGenRef = useRef(0)
+  const ladderRef = useRef(ladder)
+  ladderRef.current = ladder
+  const activeIndexRef = useRef(activeIndex)
+  activeIndexRef.current = activeIndex
+  const categoryRef = useRef(category)
+  categoryRef.current = category
 
   const title = useMemo(() => normalizeTitle(product.title), [product.title])
-  const todayCategory = useMemo(() => dailyCategory(today), [today])
+  const titleLetters = useMemo(() => {
+    const set = new Set<string>()
+    for (const ch of title) {
+      if (/[A-Z]/.test(ch)) set.add(ch)
+    }
+    return set
+  }, [title])
+  /** Count only — never expose sealed product payloads to the UI tree. */
+  const lockedAheadCount = useMemo(() => {
+    const remaining = Math.max(0, ladder.length - activeIndex - 1)
+    return Math.min(LOCKED_PREVIEW, remaining)
+  }, [ladder.length, activeIndex])
 
   const bumpSpeed = useCallback((combo: number) => {
-    const speed = Math.min(MAX_SPEED, Math.max(1, combo))
+    const speed = Math.min(
+      MAX_SPEED,
+      Math.max(1, Math.round(1 + combo * combo * 0.55)),
+    )
     setTypeSpeed(speed)
     setFlight((f) => (f ? { ...f, speed } : f))
     return speed
@@ -122,15 +173,13 @@ export function useHangazonRound() {
     [title],
   )
 
-  const resetBoard = useCallback((next: Product, nextMode: PlayMode) => {
-    const fresh = freshRoundState()
-    setProduct(next)
-    setMode(nextMode)
-    setPhase('intro')
+  const resetActiveBoard = useCallback(() => {
+    const fresh = freshBoard()
     setGuessed(fresh.guessed)
     setMisses(fresh.misses)
     missesRef.current = 0
     setLetterOutcome(fresh.letterOutcome)
+    outcomeRef.current = null
     setPriceGuess(fresh.priceGuess)
     setPriceScore(fresh.priceScore)
     setTitleGuessState('')
@@ -147,22 +196,42 @@ export function useHangazonRound() {
     comboRef.current = 0
   }, [])
 
-  const startDaily = useCallback(() => {
-    const next = pickCatalogProduct({ mode: 'daily' })
-    setCategory(next.category)
-    resetBoard(next, 'daily')
-    setPhase('letters')
-  }, [resetBoard])
+  const boardAvgPct = useMemo(() => boardAveragePct(board), [board])
+  const localAvgPct = useMemo(() => localRunsAveragePct(board), [board])
 
-  const startRandom = useCallback(
+  const snapshotPendingRun = useCallback(() => {
+    setPendingResult({
+      clears: clearsRef.current,
+      avgPct: averagePct(historyRef.current.map((e) => e.priceScore)),
+    })
+  }, [])
+
+  const startScroll = useCallback(
     (filter: CategoryFilter = category) => {
-      const next = pickCatalogProduct({ mode: 'random', category: filter })
+      const nextLadder = buildLadder(filter)
       setCategory(filter)
-      resetBoard(next, 'random')
+      setLadder(nextLadder)
+      setActiveIndex(0)
+      setHistory([])
+      historyRef.current = []
+      setClears(0)
+      clearsRef.current = 0
+      setPendingResult(null)
+      resetActiveBoard()
       setPhase('letters')
+      setScrollToken((t) => t + 1)
     },
-    [category, resetBoard],
+    [category, resetActiveBoard],
   )
+
+  /** Home/scoreboard: fake rivals drift so the board feels alive. */
+  useEffect(() => {
+    if (phase !== 'intro' && phase !== 'scoreboard') return
+    const id = window.setInterval(() => {
+      setBoard((prev) => tickFakeScores(prev))
+    }, 2600)
+    return () => window.clearInterval(id)
+  }, [phase])
 
   const guessLetter = useCallback(
     (raw: string) => {
@@ -173,7 +242,7 @@ export function useHangazonRound() {
       if (flightRef.current?.letter === letter) return
       if (queueRef.current.includes(letter)) return
 
-      comboRef.current = Math.min(MAX_SPEED, comboRef.current + 1)
+      comboRef.current = Math.min(12, comboRef.current + 1)
       const speed = bumpSpeed(comboRef.current)
 
       if (flightRef.current) {
@@ -215,8 +284,15 @@ export function useHangazonRound() {
       setFlightBusy(false)
       setTypeSpeed(1)
       comboRef.current = 0
-      setLetterOutcome(won ? 'win' : 'lose')
-      window.setTimeout(() => setPhase('price'), 420)
+      if (won) {
+        setLetterOutcome('win')
+        outcomeRef.current = 'win'
+        window.setTimeout(() => setPhase('price'), 420)
+      } else {
+        setLetterOutcome('lose')
+        outcomeRef.current = 'lose'
+        snapshotPendingRun()
+      }
       return
     }
 
@@ -235,7 +311,7 @@ export function useHangazonRound() {
     setFlightBusy(false)
     setTypeSpeed(1)
     comboRef.current = 0
-  }, [title, bumpSpeed, beginFlight])
+  }, [title, bumpSpeed, beginFlight, snapshotPendingRun])
 
   const clearFlights = useCallback(() => {
     setQueue([])
@@ -261,7 +337,6 @@ export function useHangazonRound() {
   }, [title, clearFlights])
 
   const applyTitleMiss = useCallback(() => {
-    setTitleGuessWrong(true)
     const nextMisses = missesRef.current + 1
     missesRef.current = nextMisses
     setMisses(nextMisses)
@@ -271,9 +346,45 @@ export function useHangazonRound() {
       clearFlights()
       setLetterOutcome('lose')
       outcomeRef.current = 'lose'
-      window.setTimeout(() => setPhase('price'), 420)
+      snapshotPendingRun()
     }
-  }, [clearFlights])
+  }, [clearFlights, snapshotPendingRun])
+
+  /**
+   * Post name + run to the (fake + local) leaderboard, then show the board.
+   * Clears reset; next Start Scroll begins from listing 1.
+   */
+  const submitScrollScore = useCallback(
+    (rawName: string) => {
+      if (outcomeRef.current !== 'lose') return
+      const snapshot =
+        pendingResult ??
+        ({
+          clears: clearsRef.current,
+          avgPct: averagePct(historyRef.current.map((e) => e.priceScore)),
+        } satisfies PendingScrollResult)
+
+      const saved = addLocalRun({
+        name: rawName,
+        clears: snapshot.clears,
+        avgPct: snapshot.avgPct,
+      })
+      setLastBoardId(saved.id)
+      setBoard(loadBoard())
+
+      unlockGenRef.current += 1
+      clearsRef.current = 0
+      setClears(0)
+      setHistory([])
+      historyRef.current = []
+      setActiveIndex(0)
+      setLadder(buildLadder(categoryRef.current))
+      setPendingResult(null)
+      resetActiveBoard()
+      setPhase('scoreboard')
+    },
+    [pendingResult, resetActiveBoard],
+  )
 
   const submitTitleGuess = useCallback(() => {
     if (phase !== 'letters' || outcomeRef.current !== null) return
@@ -284,22 +395,26 @@ export function useHangazonRound() {
       return
     }
 
+    setTitleGuessWrong(true)
     applyTitleMiss()
   }, [phase, titleGuess, title, succeedTitleGuess, applyTitleMiss])
 
-  /** Correct word guess → reveal that word's letters on the board. */
+  /**
+   * Correct word guess → reveal that word's letters on the board.
+   * Returns true when the guess matched.
+   */
   const submitWordGuess = useCallback(
-    (wordIndex: number) => {
-      if (phase !== 'letters' || outcomeRef.current !== null) return
-      if (!titleGuess.trim()) return
+    (wordIndex: number, guess: string): boolean => {
+      if (phase !== 'letters' || outcomeRef.current !== null) return false
+      if (!guess.trim()) return false
 
       const words = titleWords(title)
       const target = words[wordIndex]
-      if (!target || isWordRevealed(target, guessedRef.current)) return
+      if (!target || isWordRevealed(target, guessedRef.current)) return false
 
-      if (!wordMatches(titleGuess, title, wordIndex)) {
+      if (!wordMatches(guess, title, wordIndex)) {
         applyTitleMiss()
-        return
+        return false
       }
 
       const nextGuessed = new Set(guessedRef.current)
@@ -308,7 +423,6 @@ export function useHangazonRound() {
       }
       setGuessed(nextGuessed)
       guessedRef.current = nextGuessed
-      setTitleGuessState('')
       setTitleGuessWrong(false)
 
       if (isTitleSolved(title, nextGuessed)) {
@@ -317,15 +431,55 @@ export function useHangazonRound() {
         outcomeRef.current = 'win'
         window.setTimeout(() => setPhase('price'), 420)
       }
+      return true
     },
-    [phase, titleGuess, title, applyTitleMiss, clearFlights],
+    [phase, title, applyTitleMiss, clearFlights],
+  )
+
+  const unlockNext = useCallback(
+    (entry: LadderHistoryEntry, expectedGen: number) => {
+      if (unlockGenRef.current !== expectedGen) return
+      unlockGenRef.current += 1
+
+      // Only clears unlock the next rung — a fail ends the Scroll via score entry.
+      if (entry.result !== 'cleared') return
+
+      setHistory((h) => {
+        const next = [...h, entry]
+        historyRef.current = next
+        return next
+      })
+
+      const nextClears = clearsRef.current + 1
+      clearsRef.current = nextClears
+      setClears(nextClears)
+      if (nextClears > bestRef.current) {
+        bestRef.current = nextClears
+        setBestClears(nextClears)
+      }
+
+      const idx = activeIndexRef.current
+      const currentLadder = ladderRef.current
+      const nextIdx = idx + 1
+      if (nextIdx < currentLadder.length) {
+        setActiveIndex(nextIdx)
+      } else {
+        // Loop: fresh shuffle of the same aisle, keep scrolling
+        const nextLadder = buildLadder(categoryRef.current)
+        setLadder(nextLadder)
+        setActiveIndex(0)
+      }
+      resetActiveBoard()
+      setPhase('letters')
+      setScrollToken((t) => t + 1)
+    },
+    [resetActiveBoard],
   )
 
   const submitPrice = useCallback(() => {
     if (phase !== 'price') return
     const cleaned = priceGuess.replace(/[^0-9.]/g, '')
     const value = Number.parseFloat(cleaned)
-    // Blank-space boost only for a correct early title guess
     const blanks = letterOutcome === 'guess' ? blanksAtGuess : 0
     const total = countLetterSlots(title)
     const score = finalScore({
@@ -334,46 +488,60 @@ export function useHangazonRound() {
       blanksLeft: blanks,
       totalLetters: total,
     })
-    setBlankBonus(blankSpaceBonus(blanks, total))
+    const bonus = blankSpaceBonus(blanks, total)
+    setBlankBonus(bonus)
     setPriceScore(score)
     setPhase('reveal')
-    if (mode === 'daily') {
-      markDailyDone(today)
-      setDailyDone(true)
-    }
+
+    const gen = unlockGenRef.current
+
+    // Brief beat on the score, then unlock the next rung + scroll
+    window.setTimeout(() => {
+      unlockNext(
+        {
+          product,
+          result: 'cleared',
+          priceScore: score,
+          priceGuess,
+          blankBonus: bonus,
+          blanksAtGuess: blanks,
+        },
+        gen,
+      )
+    }, 1100)
   }, [
     phase,
     priceGuess,
-    product.price,
-    mode,
-    today,
+    product,
     letterOutcome,
     blanksAtGuess,
     title,
+    unlockNext,
   ])
 
-  const playAgain = useCallback(() => {
-    if (mode === 'daily') {
-      markDailyDone(today)
-      setDailyDone(true)
-      setCategory('All')
-      const next = pickCatalogProduct({
-        mode: 'random',
-        category: 'All',
-        excludeId: product.id,
-      })
-      resetBoard(next, 'random')
-      setPhase('letters')
-      return
-    }
-    const next = pickCatalogProduct({
-      mode: 'random',
-      category,
-      excludeId: product.id,
-    })
-    resetBoard(next, 'random')
-    setPhase('letters')
-  }, [mode, today, category, product.id, resetBoard])
+  /** Manual advance from reveal if auto-timer hasn't fired yet. */
+  const advanceLadder = useCallback(() => {
+    if (phase !== 'reveal' || priceScore === null) return
+    unlockNext(
+      {
+        product,
+        result: 'cleared',
+        priceScore,
+        priceGuess,
+        blankBonus,
+        blanksAtGuess,
+      },
+      unlockGenRef.current,
+    )
+  }, [
+    phase,
+    priceScore,
+    product,
+    priceGuess,
+    blankBonus,
+    blanksAtGuess,
+    unlockNext,
+  ])
 
   const pendingLetters = useMemo(() => {
     const set = new Set(queue)
@@ -384,12 +552,21 @@ export function useHangazonRound() {
   return {
     product,
     title,
+    titleLetters,
     phase,
-    mode,
     category,
     setCategory,
-    todayCategory,
-    dailyDone,
+    activeIndex,
+    history,
+    lockedAheadCount,
+    clears,
+    bestClears,
+    scrollToken,
+    board,
+    boardAvgPct,
+    localAvgPct,
+    lastBoardId,
+    pendingResult,
     guessed,
     misses,
     letterOutcome,
@@ -405,14 +582,14 @@ export function useHangazonRound() {
     queue,
     typeSpeed,
     pendingLetters,
-    startDaily,
-    startRandom,
+    startScroll,
     guessLetter,
     finishFlight,
+    submitScrollScore,
     submitTitleGuess,
     submitWordGuess,
     submitPrice,
-    playAgain,
+    advanceLadder,
     blankBonus,
     blanksAtGuess,
   }
