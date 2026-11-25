@@ -282,6 +282,7 @@
 .pdp-media {
   width: 100%;
   min-width: 0;
+  overflow: hidden;
 }
 
 .pdp-center {
@@ -370,6 +371,7 @@
 /* —— Product stage —— */
 .zoom-stage {
   width: 100%;
+  overflow: hidden;
 }
 
 .zoom-frame {
@@ -379,6 +381,7 @@
   background: #fff;
   border: 1px solid #e7e7e7;
   border-radius: 4px;
+  isolation: isolate;
 }
 
 .zoom-image {
