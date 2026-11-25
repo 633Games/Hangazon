@@ -44,6 +44,9 @@
   --space-3: clamp(0.85rem, 0.7rem + 0.7vw, 1.35rem);
   --space-4: clamp(1.15rem, 0.9rem + 1.1vw, 2rem);
   --page-pad-x: clamp(0.75rem, 0.55rem + 2.2vw, 1.35rem);
+  /* Shared Hangazon content rail (PDP + locked rungs share edges) */
+  --content-max: 68rem;
+  --rung-pad-x: clamp(0.75rem, 0.55rem + 1.6vw, 1.15rem);
   --touch-min: 44px;
   --safe-top: env(safe-area-inset-top, 0px);
   --safe-right: env(safe-area-inset-right, 0px);
@@ -120,5 +123,19 @@ a {
     animation-duration: 0.01ms !important;
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
+  }
+
+  /* Don't leave entrance transforms stuck mid-keyframe when duration is forced tiny */
+  .round-pdp,
+  .ladder-rung-active,
+  .scroll-board,
+  .hero-copy,
+  .brand-hero,
+  .hero-tag,
+  .cats,
+  .hero-actions {
+    animation: none !important;
+    opacity: 1 !important;
+    transform: none !important;
   }
 }

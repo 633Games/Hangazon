@@ -287,6 +287,27 @@
   flex-shrink: 0;
 }
 
+/* Clinton logo — light plate so black ink reads on navy topbar */
+.brand-logo-link {
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  line-height: 0;
+  text-decoration: none;
+  background: #fff;
+  border-radius: 6px;
+  padding: 0.12rem 0.35rem 0.18rem;
+  box-shadow: 0 1px 0 rgba(0, 0, 0, 0.18);
+}
+
+.brand-logo {
+  display: block;
+  width: clamp(7.25rem, 32vw, 11.5rem);
+  height: auto;
+  max-height: clamp(3.4rem, 12vw, 4.5rem);
+  object-fit: contain;
+}
+
 .topbar-search {
   display: none;
   flex: 1;
@@ -536,7 +557,7 @@
 
 /* —— Scroll ladder —— */
 .ladder {
-  width: min(1180px, 100%);
+  width: min(var(--content-max), 100%);
   margin: 0 auto;
   padding:
     var(--space-2)
@@ -549,28 +570,23 @@
   min-width: 0;
 }
 
-.ladder-goal {
-  margin: 0;
-  padding: 0.55rem 0.75rem;
-  font-size: 0.92rem;
-  font-weight: 600;
-  color: var(--navy-2);
-  background: linear-gradient(90deg, rgba(255, 216, 20, 0.28), rgba(255, 216, 20, 0.06));
-  border-left: 3px solid var(--lemon-deep);
-}
-
 .ladder-rung {
   scroll-margin-top: 4.5rem;
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
 }
 
 .ladder-rung-active {
   width: 100%;
   margin: 0;
-  padding: 0.85rem 1rem 2rem;
+  padding: 0.85rem var(--rung-pad-x) 2rem;
   background: #fff;
   border: 1px solid var(--line);
   box-shadow: var(--shadow-md);
-  animation: stage-in 0.45s var(--ease-snap) both;
+  /* No fill-mode: avoid leaving a scaled transform that insets edges vs locked rungs */
+  animation: stage-in 0.45s var(--ease-snap);
 }
 
 .ladder-rung-done {
@@ -578,7 +594,7 @@
   grid-template-columns: minmax(56px, 72px) minmax(0, 1fr);
   gap: var(--space-2);
   align-items: center;
-  padding: 0.7rem 0.85rem;
+  padding: 0.7rem var(--rung-pad-x);
   background: #fff;
   border: 1px solid var(--line);
   min-width: 0;
@@ -672,7 +688,7 @@
   gap: var(--space-2);
   align-items: center;
   min-height: var(--touch-min);
-  padding: 0.65rem 0.85rem;
+  padding: 0.65rem var(--rung-pad-x);
   border: 1px dashed var(--line-strong);
   background:
     linear-gradient(180deg, rgba(244, 246, 248, 0.92), rgba(227, 231, 237, 0.85));
@@ -815,19 +831,21 @@
 
 /* —— Amazon-like PDP round —— */
 .round-pdp {
-  width: min(1180px, 100%);
-  margin: 0 auto;
-  padding: 0.75rem var(--page-pad-x) 2.5rem;
-  background: #fff;
-  animation: stage-in 0.45s var(--ease-snap) both;
-  min-width: 0;
+  width: 100%;
   max-width: 100%;
+  margin: 0;
+  padding: 0.85rem var(--rung-pad-x) 2rem;
+  background: #fff;
+  animation: stage-in 0.45s var(--ease-snap);
+  min-width: 0;
   overflow: hidden;
+  box-sizing: border-box;
 }
 
 .ladder-rung-active.round-pdp {
-  padding-left: var(--page-pad-x);
-  padding-right: var(--page-pad-x);
+  /* Same rail + pad as done/locked rungs — no extra inset */
+  padding-left: var(--rung-pad-x);
+  padding-right: var(--rung-pad-x);
 }
 
 .breadcrumb {
@@ -845,29 +863,23 @@
   align-items: start;
   min-width: 0;
   width: 100%;
+  max-width: 100%;
 }
 
 /* Stack PDP columns on small screens; 3-col only at desktop */
 @media (min-width: 960px) {
   .pdp {
-    grid-template-columns: minmax(240px, 0.9fr) minmax(0, 1.2fr) minmax(240px, 0.68fr);
+    grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.2fr) minmax(0, 0.68fr);
     gap: 1.75rem;
   }
 }
 
 .pdp-media {
   width: 100%;
-  max-width: min(100%, 28rem);
-  justify-self: center;
+  max-width: 100%;
+  justify-self: stretch;
   min-width: 0;
   overflow: hidden;
-}
-
-@media (min-width: 960px) {
-  .pdp-media {
-    max-width: none;
-    justify-self: stretch;
-  }
 }
 
 .pdp-center {
@@ -1942,6 +1954,11 @@ button.listing-word.is-guessable:focus-visible {
 @media (max-width: 720px) {
   .brand-bar {
     font-size: clamp(1.2rem, 5.5vw, 1.45rem);
+  }
+
+  .brand-logo {
+    width: clamp(6.75rem, 42vw, 9.5rem);
+    max-height: 3.85rem;
   }
 
   .mode-pill,

@@ -185,7 +185,16 @@ export default function App() {
       )}
 
       <header className="topbar">
-        <p className="brand brand-bar">Hangazon</p>
+        <a className="brand-logo-link" href={`${import.meta.env.BASE_URL}`} aria-label="Hangazon">
+          <img
+            className="brand-logo"
+            src={`${import.meta.env.BASE_URL}hangazon-logo.png`}
+            alt="Hangazon"
+            width={160}
+            height={125}
+            decoding="async"
+          />
+        </a>
         <div className="topbar-search" aria-hidden>
           <span className="topbar-dept">All</span>
           <span className="topbar-field">Search Hangazon</span>
@@ -274,11 +283,6 @@ export default function App() {
         </div>
       ) : (
         <main className="ladder">
-          <p className="ladder-goal">
-            Clear each listing to unlock the next. One fail ends the Scroll —
-            back to listing 1.
-          </p>
-
           {game.history.map((entry, i) => (
             <ClearedRung key={`${entry.product.id}-${i}`} entry={entry} step={i + 1} />
           ))}
