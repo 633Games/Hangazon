@@ -18,7 +18,7 @@ export function Reveal({
   onAgain,
 }: Props) {
   const guessNum = Number.parseFloat(priceGuess.replace(/[^0-9.]/g, ''))
-  const href = affiliateUrl(product.asin)
+  const href = affiliateUrl(product.asin, product.detailUrl)
 
   return (
     <div className="reveal-panel">

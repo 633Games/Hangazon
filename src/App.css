@@ -142,6 +142,19 @@
   animation: rise-in 0.55s var(--ease-snap) 0.12s both;
 }
 
+.catalog-source {
+  margin: 0;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--ink-soft);
+}
+
+.catalog-source[data-source='amazon'] {
+  color: var(--hit);
+}
+
 .cats {
   display: flex;
   flex-wrap: wrap;

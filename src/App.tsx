@@ -55,19 +55,27 @@ export default function App() {
               <button
                 type="button"
                 className="btn btn-primary btn-lg"
-                onClick={game.startDaily}
-                disabled={game.dailyDone}
+                onClick={() => void game.startDaily()}
+                disabled={game.dailyDone || game.loading}
               >
-                {game.dailyDone ? 'Daily done' : `Daily · ${game.todayCategory}`}
+                {game.dailyDone
+                  ? 'Daily done'
+                  : game.loading
+                    ? '…'
+                    : `Daily · ${game.todayCategory}`}
               </button>
               <button
                 type="button"
                 className="btn btn-ghost btn-lg"
-                onClick={() => game.startRandom(game.category)}
+                onClick={() => void game.startRandom(game.category)}
+                disabled={game.loading}
               >
-                Random
+                {game.loading ? '…' : 'Random'}
               </button>
             </div>
+            <p className="catalog-source" data-source={game.catalogSource}>
+              {game.catalogSource === 'amazon' ? 'Amazon live' : 'Sample'}
+            </p>
           </div>
         </section>
       ) : (

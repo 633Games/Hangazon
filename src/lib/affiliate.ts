@@ -1,12 +1,17 @@
-/**
- * Amazon Associates tag — public by design (appears in every affiliate URL).
- * Replace with your own tag from associates.amazon.com.
- * For live ads later: Product Advertising API (server-side secrets only).
- */
-export const ASSOCIATE_TAG = 'hangazon-20'
+import { getAssociateTag } from './catalog'
 
-export function affiliateUrl(asin: string, tag = ASSOCIATE_TAG): string {
+/** Build an Associates URL. Tag comes from /api/status when live. */
+export function affiliateUrl(asin: string, detailUrl?: string | null): string {
+  if (detailUrl) {
+    try {
+      const u = new URL(detailUrl)
+      u.searchParams.set('tag', getAssociateTag())
+      return u.toString()
+    } catch {
+      /* fall through */
+    }
+  }
   const url = new URL(`https://www.amazon.com/dp/${encodeURIComponent(asin)}`)
-  url.searchParams.set('tag', tag)
+  url.searchParams.set('tag', getAssociateTag())
   return url.toString()
 }

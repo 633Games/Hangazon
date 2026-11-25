@@ -17,6 +17,8 @@ export type Product = {
   asin: string
   imageUrl: string
   category: Category
+  /** PA-API DetailPageURL when live */
+  detailUrl?: string | null
 }
 
 /**

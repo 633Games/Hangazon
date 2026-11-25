@@ -1,34 +1,41 @@
 # Hangazon
 
-Hangman meets the storefront: a zoomed product drops in, you guess letters to reveal the listing title, then score the price from **0–100%**. After the round, an Amazon Associates affiliate link lets players open the listing (and earns you referral credit).
+Hangman meets the storefront: zoomed product → letter scan → price score → Amazon Associates link.
 
-## Play loop
+## Live Amazon listings
 
-1. **Letters** — type A–Z (or tap the keyboard). Hits fill the title; misses draw the gallows and pull the zoom back a notch.
-2. **Price** — after a win or 6 misses, guess the sticker price.
-3. **Reveal** — see accuracy, then open the affiliate listing.
+Browsers **cannot** read Amazon cookies or scrape the storefront. Real listings use the official **Product Advertising API (PA-API 5.0)** on the server.
 
-## Product data
+Set these secrets (never in client code):
 
-Browsers **cannot** pull Amazon ads from cookies or ad pixels (cross-origin). This build ships a **sample catalog** in `src/data/products.ts`.
+| Secret | What |
+| --- | --- |
+| `AMAZON_PAAPI_ACCESS_KEY` | PA-API access key |
+| `AMAZON_PAAPI_SECRET_KEY` | PA-API secret key |
+| `AMAZON_ASSOCIATE_TAG` | Associates tracking id (`yourtag-20`) |
 
-To go live with real listings:
+Optional: `AMAZON_MARKETPLACE` (default `www.amazon.com`).
 
-1. Join [Amazon Associates](https://affiliate-program.amazon.com/) and set your tag in `src/lib/affiliate.ts` (`ASSOCIATE_TAG`).
-2. Replace ASINs / titles / prices / images with your catalog, **or** add a server that calls the [Product Advertising API](https://webservices.amazon.com/paapi5/documentation/) and returns sanitized product DTOs (never ship PA-API secrets to the browser).
+Without credentials the app uses the **sample catalog** and still plays fine.
 
 ## Develop
 
 ```bash
 npm install
-npm run dev
+npm run dev          # Vite + /api middleware
 ```
 
 ```bash
 npm run build
-npm run preview
+npm start            # static dist + /api on :8787
 ```
+
+## Play
+
+- **Daily** — date-hashed aisle + listing (same day = same product when live)
+- **Random** — aisle chips filter the search
+- Fast-type: queue keys; 2→2× scan, 3→3×, …
 
 ## Stack
 
-Vite · React · TypeScript · Framer Motion
+Vite · React · TypeScript · Framer Motion · amazon-paapi
