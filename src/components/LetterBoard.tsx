@@ -14,10 +14,19 @@ type Props = {
   onSubmitWord?: (wordIndex: number, guess: string) => boolean
 }
 
-const STEP_MS = 52
-const LAND_MS = 100
-const MISS_TAIL_MS = 90
+const STEP_MS = 48
+const LAND_MS = 90
 const WRONG_FLASH_MS = 480
+const MISS_FALL_MS = 920
+
+type MissDrop = {
+  id: number
+  letter: string
+  drift: number
+  spin: number
+  duration: number
+  left: number
+}
 
 export function LetterBoard({
   title,
@@ -51,6 +60,7 @@ export function LetterBoard({
   const [cursor, setCursor] = useState(-1)
   const [landed, setLanded] = useState<Set<number>>(() => new Set())
   const [flying, setFlying] = useState(false)
+  const [missDrops, setMissDrops] = useState<MissDrop[]>([])
   const flightId = flight?.id ?? null
 
   const [activeWord, setActiveWord] = useState<number | null>(null)
@@ -122,6 +132,46 @@ export function LetterBoard({
     }
 
     let cancelled = false
+    const speed = Math.max(1, flight.speed)
+    speedRef.current = speed
+
+    const finish = () => {
+      if (cancelled) return
+      setFlying(false)
+      setCursor(-1)
+      doneRef.current()
+    }
+
+    // Miss: letter tumbles off-screen; acknowledge early so queues keep flying.
+    if (!flight.hit) {
+      const duration = Math.max(420, MISS_FALL_MS / Math.pow(speed, 0.55))
+      const ack = Math.max(70, 260 / Math.pow(speed, 0.9))
+      const drop: MissDrop = {
+        id: flight.id,
+        letter: flight.letter,
+        drift: (Math.random() * 2 - 1) * 42,
+        spin: (Math.random() * 2 - 1) * 520,
+        duration,
+        left: 28 + Math.random() * 44,
+      }
+      setMissDrops((prev) => [...prev, drop])
+      setFlying(false)
+      setCursor(-1)
+      setLanded(new Set())
+
+      const ackTimer = window.setTimeout(finish, ack)
+      const clearTimer = window.setTimeout(() => {
+        setMissDrops((prev) => prev.filter((d) => d.id !== drop.id))
+      }, duration)
+
+      return () => {
+        cancelled = true
+        window.clearTimeout(ackTimer)
+        window.clearTimeout(clearTimer)
+      }
+    }
+
+    // Hit: scan across slots (speed scales hard with mash combo).
     const targets = new Set(
       slots.filter((s) => s.ch === flight.letter).map((s) => s.flat),
     )
@@ -137,23 +187,15 @@ export function LetterBoard({
     setCursor(0)
     setLanded(new Set())
 
-    const finish = () => {
-      if (cancelled) return
-      setFlying(false)
-      setCursor(-1)
-      doneRef.current()
-    }
-
     const tick = (now: number) => {
       if (cancelled) return
       const dt = now - last
       last = now
-      const step = STEP_MS / speedRef.current
+      const step = STEP_MS / Math.pow(speedRef.current, 1.45)
 
       if (landing) {
         landAcc += dt
-        const need =
-          (flight.hit ? LAND_MS : MISS_TAIL_MS) / speedRef.current
+        const need = LAND_MS / Math.pow(speedRef.current, 1.2)
         if (landAcc >= need) {
           finish()
           return
@@ -167,7 +209,7 @@ export function LetterBoard({
         acc -= step
         const at = i
         setCursor(at)
-        if (flight.hit && targets.has(at)) {
+        if (targets.has(at)) {
           setLanded((prev) => {
             const next = new Set(prev)
             next.add(at)
@@ -226,6 +268,21 @@ export function LetterBoard({
 
   return (
     <h1 className="listing-title" aria-label="Product title">
+      {missDrops.map((drop) => (
+        <span
+          key={drop.id}
+          className="miss-letter-drop"
+          aria-hidden
+          style={{
+            left: `${drop.left}%`,
+            ['--miss-drift' as string]: `${drop.drift}vw`,
+            ['--miss-spin' as string]: `${drop.spin}deg`,
+            ['--miss-duration' as string]: `${drop.duration}ms`,
+          }}
+        >
+          {drop.letter}
+        </span>
+      ))}
       {displayWords.map((rawWord, wi) => {
         const norm = words[wi] ?? ''
         const revealed =

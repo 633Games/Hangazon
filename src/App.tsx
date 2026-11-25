@@ -1,4 +1,4 @@
-import { useEffect } from 'react'
+import { useEffect, type CSSProperties } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
 import { CategoryChips } from './components/CategoryChips'
 import { Lives } from './components/Lives'
@@ -20,9 +20,17 @@ export default function App() {
     revealed ||
     game.letterOutcome === 'lose' ||
     game.letterOutcome === 'guess'
+  const bloodied = game.letterOutcome === 'lose'
+  const showDeath =
+    bloodied && game.phase === 'letters'
+  const vibrating =
+    game.phase === 'letters' &&
+    game.letterOutcome === null &&
+    game.typeSpeed > 2
 
   useEffect(() => {
     if (game.phase !== 'letters') return
+    if (game.letterOutcome !== null) return
     const onKey = (e: KeyboardEvent) => {
       if (e.metaKey || e.ctrlKey || e.altKey) return
       const t = e.target
@@ -38,10 +46,28 @@ export default function App() {
     }
     window.addEventListener('keydown', onKey)
     return () => window.removeEventListener('keydown', onKey)
-  }, [game.phase, game.guessLetter])
+  }, [game.phase, game.letterOutcome, game.guessLetter])
 
   return (
-    <div className="app">
+    <div
+      className={[
+        'app',
+        vibrating ? 'is-vibrating' : '',
+        bloodied ? 'is-bloodied' : '',
+      ]
+        .filter(Boolean)
+        .join(' ')}
+      style={
+        vibrating
+          ? ({
+              ['--vibe' as string]: String(
+                Math.min(8, 1 + (game.typeSpeed - 1) * 0.35),
+              ),
+              ['--vibe-amp' as string]: `${Math.min(2.8, 0.35 + game.typeSpeed * 0.09)}px`,
+            } as CSSProperties)
+          : undefined
+      }
+    >
       <header className="topbar">
         <p className="brand brand-bar">Hangazon</p>
         <div className="topbar-search" aria-hidden>
@@ -109,13 +135,46 @@ export default function App() {
             Hangazon › {game.product.category} › Listing
           </p>
 
-          <div className="pdp">
+          <div
+            className={[
+              'pdp',
+              bloodied ? 'is-bloodied' : '',
+              bloodied && !showDeath ? 'is-blood-settled' : '',
+            ]
+              .filter(Boolean)
+              .join(' ')}
+          >
+            {bloodied && (
+              <div className="blood-fill" aria-hidden>
+                <div className="blood-column">
+                  <div className="blood-meniscus" />
+                  <div className="blood-body" />
+                </div>
+              </div>
+            )}
+
+            {showDeath && (
+              <div className="death-overlay" role="alertdialog" aria-labelledby="you-died-label">
+                <p id="you-died-label" className="you-died">
+                  YOU DIED
+                </p>
+                <p className="death-sub">Out of attempts</p>
+                <button
+                  type="button"
+                  className="btn btn-ghost death-next"
+                  onClick={game.continueAfterDeath}
+                >
+                  Next
+                </button>
+              </div>
+            )}
+
             <div className="pdp-media">
               <ZoomedProduct
                 imageUrl={game.product.imageUrl}
                 alt={titleKnown ? game.product.title : 'Product'}
                 misses={game.misses}
-                revealed={revealed || game.phase === 'price'}
+                revealed={revealed || game.phase === 'price' || bloodied}
                 shakeKey={game.shakeKey}
               />
             </div>
@@ -142,7 +201,7 @@ export default function App() {
                 />
               )}
 
-              {game.phase === 'letters' && (
+              {game.phase === 'letters' && !showDeath && (
                 <div className="pdp-play">
                   <Lives misses={game.misses} />
                   <Keyboard
@@ -162,7 +221,7 @@ export default function App() {
 
             <aside className="pdp-buybox">
               <AnimatePresence mode="wait">
-                {game.phase === 'letters' && (
+                {game.phase === 'letters' && !showDeath && (
                   <motion.div
                     key="box-letters"
                     initial={{ opacity: 0, y: 6 }}

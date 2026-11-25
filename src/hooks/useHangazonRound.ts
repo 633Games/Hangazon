@@ -36,7 +36,8 @@ export type LetterFlight = {
   speed: number
 }
 
-const MAX_SPEED = 8
+/** Aggressive type-ahead multiplier — mash keys and flights fly. */
+const MAX_SPEED = 24
 
 function freshRoundState() {
   return {
@@ -102,7 +103,11 @@ export function useHangazonRound() {
   const todayCategory = useMemo(() => dailyCategory(today), [today])
 
   const bumpSpeed = useCallback((combo: number) => {
-    const speed = Math.min(MAX_SPEED, Math.max(1, combo))
+    // Quadratic ramp so rapid presses feel dramatically faster.
+    const speed = Math.min(
+      MAX_SPEED,
+      Math.max(1, Math.round(1 + combo * combo * 0.55)),
+    )
     setTypeSpeed(speed)
     setFlight((f) => (f ? { ...f, speed } : f))
     return speed
@@ -173,7 +178,7 @@ export function useHangazonRound() {
       if (flightRef.current?.letter === letter) return
       if (queueRef.current.includes(letter)) return
 
-      comboRef.current = Math.min(MAX_SPEED, comboRef.current + 1)
+      comboRef.current = Math.min(12, comboRef.current + 1)
       const speed = bumpSpeed(comboRef.current)
 
       if (flightRef.current) {
@@ -215,8 +220,15 @@ export function useHangazonRound() {
       setFlightBusy(false)
       setTypeSpeed(1)
       comboRef.current = 0
-      setLetterOutcome(won ? 'win' : 'lose')
-      window.setTimeout(() => setPhase('price'), 420)
+      if (won) {
+        setLetterOutcome('win')
+        outcomeRef.current = 'win'
+        window.setTimeout(() => setPhase('price'), 420)
+      } else {
+        setLetterOutcome('lose')
+        outcomeRef.current = 'lose'
+        // Stay on letters for YOU DIED → Next continues to listing
+      }
       return
     }
 
@@ -270,9 +282,15 @@ export function useHangazonRound() {
       clearFlights()
       setLetterOutcome('lose')
       outcomeRef.current = 'lose'
-      window.setTimeout(() => setPhase('price'), 420)
     }
   }, [clearFlights])
+
+  /** After YOU DIED, continue into the price listing (blood stays until next game). */
+  const continueAfterDeath = useCallback(() => {
+    if (outcomeRef.current !== 'lose') return
+    if (phase !== 'letters') return
+    setPhase('price')
+  }, [phase])
 
   const submitTitleGuess = useCallback(() => {
     if (phase !== 'letters' || outcomeRef.current !== null) return
@@ -412,6 +430,7 @@ export function useHangazonRound() {
     startRandom,
     guessLetter,
     finishFlight,
+    continueAfterDeath,
     submitTitleGuess,
     submitWordGuess,
     submitPrice,
