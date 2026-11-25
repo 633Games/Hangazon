@@ -49,8 +49,7 @@ export const PRODUCTS: Product[] = [
     prime: true,
     blurb: 'Clear calls, 32-hour case battery, pocket-size case.',
     asin: 'B0DEMOEAR1',
-    imageUrl:
-      'https://images.unsplash.com/photo-1590658268037-6bf12165a8df?auto=format&fit=crop&w=1200&q=80',
+    imageUrl: '/products/earbuds.jpg',
     category: 'Electronics',
     affiliateUrl: affiliateSearch('wireless earbuds bluetooth charging case'),
   },
@@ -65,8 +64,7 @@ export const PRODUCTS: Product[] = [
     prime: true,
     blurb: 'Tactile switches, aluminium top plate, USB-C.',
     asin: 'B0DEMOKEY1',
-    imageUrl:
-      'https://images.unsplash.com/photo-1511467687858-23d96c32e4ae?auto=format&fit=crop&w=1200&q=80',
+    imageUrl: '/products/keyboard.jpg',
     category: 'Electronics',
     affiliateUrl: affiliateSearch('mechanical gaming keyboard rgb'),
   },
@@ -81,8 +79,7 @@ export const PRODUCTS: Product[] = [
     prime: true,
     blurb: 'Point, shoot, peel. Classic credit-card prints.',
     asin: 'B0DEMOCAM1',
-    imageUrl:
-      'https://images.unsplash.com/photo-1526170375885-4d8ecf77b99f?auto=format&fit=crop&w=1200&q=80',
+    imageUrl: '/products/camera.jpg',
     category: 'Electronics',
     affiliateUrl: affiliateSearch('instant print camera'),
   },
@@ -97,8 +94,7 @@ export const PRODUCTS: Product[] = [
     prime: true,
     blurb: '7-day battery, sleep tracking, water resistant.',
     asin: 'B0DEMOWCH1',
-    imageUrl:
-      'https://images.unsplash.com/photo-1523275335684-37898b6baf30?auto=format&fit=crop&w=1200&q=80',
+    imageUrl: '/products/watch.jpg',
     category: 'Electronics',
     affiliateUrl: affiliateSearch('smart watch fitness tracker gps'),
   },
@@ -113,8 +109,7 @@ export const PRODUCTS: Product[] = [
     prime: true,
     blurb: 'Oven-safe, stove-safe, builds a natural non-stick.',
     asin: 'B0DEMOSKL1',
-    imageUrl:
-      'https://images.unsplash.com/photo-1556910103-1c02745aae4d?auto=format&fit=crop&w=1200&q=80',
+    imageUrl: '/products/skillet.jpg',
     category: 'Kitchen',
     affiliateUrl: affiliateSearch('cast iron skillet 30cm'),
   },
@@ -129,8 +124,7 @@ export const PRODUCTS: Product[] = [
     prime: true,
     blurb: 'Smoothies in 30 seconds. Dishwasher-safe cup.',
     asin: 'B0DEMOBLD1',
-    imageUrl:
-      'https://images.unsplash.com/photo-1570222094114-d054a817e56b?auto=format&fit=crop&w=1200&q=80',
+    imageUrl: '/products/blender.jpg',
     category: 'Kitchen',
     affiliateUrl: affiliateSearch('personal blender to go cup'),
   },
@@ -145,8 +139,7 @@ export const PRODUCTS: Product[] = [
     prime: true,
     blurb: 'Auto shut-off, boil-dry protection, cordless base.',
     asin: 'B0DEMOKTL1',
-    imageUrl:
-      'https://images.unsplash.com/photo-1594631252845-29fc4cc8cde9?auto=format&fit=crop&w=1200&q=80',
+    imageUrl: '/products/kettle.jpg',
     category: 'Kitchen',
     affiliateUrl: affiliateSearch('stainless steel electric kettle 1.7l'),
   },
@@ -161,8 +154,7 @@ export const PRODUCTS: Product[] = [
     prime: true,
     blurb: '5 colour temps, eye-care mode, clamp-free base.',
     asin: 'B0DEMOLMP1',
-    imageUrl:
-      'https://images.unsplash.com/photo-1507473885765-e6ed057f782c?auto=format&fit=crop&w=1200&q=80',
+    imageUrl: '/products/lamp.jpg',
     category: 'Home',
     affiliateUrl: affiliateSearch('led desk lamp usb dimmable'),
   },
@@ -177,8 +169,7 @@ export const PRODUCTS: Product[] = [
     prime: true,
     blurb: 'Thick glaze, comfortable handle, stackable.',
     asin: 'B0DEMOMUG1',
-    imageUrl:
-      'https://images.unsplash.com/photo-1514432324607-a09d9b4aefdd?auto=format&fit=crop&w=1200&q=80',
+    imageUrl: '/products/mug.jpg',
     category: 'Home',
     affiliateUrl: affiliateSearch('ceramic coffee mug 350ml'),
   },
@@ -193,8 +184,7 @@ export const PRODUCTS: Product[] = [
     prime: true,
     blurb: 'Clean soy wax, cotton wick, gift-ready tin.',
     asin: 'B0DEMOCND1',
-    imageUrl:
-      'https://images.unsplash.com/photo-1478144592103-25e218a04891?auto=format&fit=crop&w=1200&q=80',
+    imageUrl: '/products/candle.jpg',
     category: 'Home',
     affiliateUrl: affiliateSearch('soy scented candle sandalwood'),
   },
@@ -209,8 +199,7 @@ export const PRODUCTS: Product[] = [
     prime: true,
     blurb: 'Cushioned TPE, dual-sided grip, easy wipe clean.',
     asin: 'B0DEMOYGA1',
-    imageUrl:
-      'https://images.unsplash.com/photo-1601925260368-ae2f83cf8b7f?auto=format&fit=crop&w=1200&q=80',
+    imageUrl: '/products/yogamat.jpg',
     category: 'Fitness',
     affiliateUrl: affiliateSearch('non slip yoga mat 6mm'),
   },
@@ -225,8 +214,7 @@ export const PRODUCTS: Product[] = [
     prime: true,
     blurb: 'Floor-safe hex heads, secure knurled handles.',
     asin: 'B0DEMODMB1',
-    imageUrl:
-      'https://images.unsplash.com/photo-1517836357463-d25dfeac3438?auto=format&fit=crop&w=1200&q=80',
+    imageUrl: '/products/dumbbells.jpg',
     category: 'Fitness',
     affiliateUrl: affiliateSearch('hex dumbbells rubber 5kg pair'),
   },
@@ -241,8 +229,7 @@ export const PRODUCTS: Product[] = [
     prime: true,
     blurb: 'Fits under seat, padded 15" sleeve, water-resistant.',
     asin: 'B0DEMOPCK1',
-    imageUrl:
-      'https://images.unsplash.com/photo-1553062407-98eeb64c6a62?auto=format&fit=crop&w=1200&q=80',
+    imageUrl: '/products/backpack.jpg',
     category: 'Travel',
     affiliateUrl: affiliateSearch('travel backpack 40l laptop'),
   },
@@ -257,8 +244,7 @@ export const PRODUCTS: Product[] = [
     prime: true,
     blurb: 'Overnight-ready, separate shoe bay, luggage sleeve.',
     asin: 'B0DEMODFL1',
-    imageUrl:
-      'https://images.unsplash.com/photo-1548036328-c9fa89d128fa?auto=format&fit=crop&w=1200&q=80',
+    imageUrl: '/products/duffel.jpg',
     category: 'Travel',
     affiliateUrl: affiliateSearch('weekender duffel bag shoe pocket'),
   },
@@ -273,8 +259,7 @@ export const PRODUCTS: Product[] = [
     prime: true,
     blurb: 'Cushioned midsole, reflective hits, everyday miles.',
     asin: 'B0DEMOSNK1',
-    imageUrl:
-      'https://images.unsplash.com/photo-1542291026-7eec264c27ff?auto=format&fit=crop&w=1200&q=80',
+    imageUrl: '/products/sneakers.jpg',
     category: 'Fashion',
     affiliateUrl: affiliateSearch('mens road running shoes mesh'),
   },
@@ -289,8 +274,7 @@ export const PRODUCTS: Product[] = [
     prime: true,
     blurb: 'Curved brim, soft crown, one-size strap.',
     asin: 'B0DEMOCAP1',
-    imageUrl:
-      'https://images.unsplash.com/photo-1588850561407-ed78c282e89b?auto=format&fit=crop&w=1200&q=80',
+    imageUrl: '/products/cap.jpg',
     category: 'Fashion',
     affiliateUrl: affiliateSearch('classic baseball cap washed cotton'),
   },

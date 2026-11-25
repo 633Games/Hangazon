@@ -7,6 +7,8 @@ type Props = {
   product: Product
   priceScore: number
   priceGuess: string
+  blankBonus?: number
+  blanksAtGuess?: number
   againLabel?: string
   onAgain: () => void
 }
@@ -15,6 +17,8 @@ export function Reveal({
   product,
   priceScore,
   priceGuess,
+  blankBonus = 0,
+  blanksAtGuess = 0,
   againLabel = 'Again',
   onAgain,
 }: Props) {
@@ -30,6 +34,13 @@ export function Reveal({
       >
         <span className="score-value">{priceScore}%</span>
       </div>
+
+      {blankBonus > 0 && (
+        <p className="blank-bonus">
+          Early guess · {blanksAtGuess} blank
+          {blanksAtGuess === 1 ? '' : 's'} left · +{blankBonus}
+        </p>
+      )}
 
       <p className="reveal-aisle">
         {product.category}

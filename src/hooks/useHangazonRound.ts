@@ -15,7 +15,12 @@ import {
   MAX_MISSES,
   normalizeTitle,
 } from '../lib/hangman'
-import { priceAccuracy } from '../lib/scoring'
+import {
+  blankSpaceBonus,
+  countBlanksLeft,
+  countLetterSlots,
+  finalScore,
+} from '../lib/scoring'
 
 export type Phase = 'intro' | 'letters' | 'price' | 'reveal'
 export type PlayMode = 'daily' | 'random'
@@ -33,7 +38,7 @@ function freshRoundState() {
   return {
     guessed: new Set<string>(),
     misses: 0,
-    letterOutcome: null as 'win' | 'lose' | null,
+    letterOutcome: null as 'win' | 'lose' | 'guess' | null,
     priceGuess: '',
     priceScore: null as number | null,
     flight: null as LetterFlight | null,
@@ -57,11 +62,13 @@ export function useHangazonRound() {
   const [phase, setPhase] = useState<Phase>('intro')
   const [guessed, setGuessed] = useState<Set<string>>(() => new Set())
   const [misses, setMisses] = useState(0)
-  const [letterOutcome, setLetterOutcome] = useState<'win' | 'lose' | null>(
-    null,
-  )
+  const [letterOutcome, setLetterOutcome] = useState<
+    'win' | 'lose' | 'guess' | null
+  >(null)
   const [priceGuess, setPriceGuess] = useState('')
   const [priceScore, setPriceScore] = useState<number | null>(null)
+  const [blankBonus, setBlankBonus] = useState(0)
+  const [blanksAtGuess, setBlanksAtGuess] = useState(0)
   const [shakeKey, setShakeKey] = useState(0)
   const [flight, setFlight] = useState<LetterFlight | null>(null)
   const [flightBusy, setFlightBusy] = useState(false)
@@ -115,6 +122,8 @@ export function useHangazonRound() {
     setLetterOutcome(fresh.letterOutcome)
     setPriceGuess(fresh.priceGuess)
     setPriceScore(fresh.priceScore)
+    setBlankBonus(0)
+    setBlanksAtGuess(0)
     setFlight(fresh.flight)
     flightRef.current = null
     setFlightBusy(fresh.flightBusy)
@@ -215,18 +224,54 @@ export function useHangazonRound() {
     comboRef.current = 0
   }, [title, bumpSpeed, beginFlight])
 
+  const haveAGuess = useCallback(() => {
+    if (phase !== 'letters' || outcomeRef.current !== null) return
+    const blanks = countBlanksLeft(title, guessedRef.current)
+    const total = countLetterSlots(title)
+    setBlanksAtGuess(blanks)
+    setBlankBonus(blankSpaceBonus(blanks, total))
+    setQueue([])
+    queueRef.current = []
+    setFlight(null)
+    flightRef.current = null
+    setFlightBusy(false)
+    setTypeSpeed(1)
+    comboRef.current = 0
+    setLetterOutcome('guess')
+    outcomeRef.current = 'guess'
+    window.setTimeout(() => setPhase('price'), 280)
+  }, [phase, title])
+
   const submitPrice = useCallback(() => {
     if (phase !== 'price') return
     const cleaned = priceGuess.replace(/[^0-9.]/g, '')
     const value = Number.parseFloat(cleaned)
-    const score = priceAccuracy(value, product.price)
+    // Blank-space boost only for early “Have a Guess”
+    const blanks = letterOutcome === 'guess' ? blanksAtGuess : 0
+    const total = countLetterSlots(title)
+    const score = finalScore({
+      priceGuess: value,
+      actualPrice: product.price,
+      blanksLeft: blanks,
+      totalLetters: total,
+    })
+    setBlankBonus(blankSpaceBonus(blanks, total))
     setPriceScore(score)
     setPhase('reveal')
     if (mode === 'daily') {
       markDailyDone(today)
       setDailyDone(true)
     }
-  }, [phase, priceGuess, product.price, mode, today])
+  }, [
+    phase,
+    priceGuess,
+    product.price,
+    mode,
+    today,
+    letterOutcome,
+    blanksAtGuess,
+    title,
+  ])
 
   const playAgain = useCallback(() => {
     if (mode === 'daily') {
@@ -282,7 +327,10 @@ export function useHangazonRound() {
     startRandom,
     guessLetter,
     finishFlight,
+    haveAGuess,
     submitPrice,
     playAgain,
+    blankBonus,
+    blanksAtGuess,
   }
 }

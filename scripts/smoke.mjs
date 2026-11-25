@@ -31,20 +31,22 @@ try {
 
   await page.screenshot({ path: path.join(OUT, '01-hero.png'), fullPage: true })
 
+  // Local product image on hero
+  const heroSrc = await page.locator('.hero-img').getAttribute('src')
+  if (!heroSrc?.startsWith('/products/')) {
+    throw new Error(`expected local product image, got ${heroSrc}`)
+  }
+  note(`hero image: ${heroSrc}`)
+
   await page.getByRole('button', { name: /^Random$/i }).click()
   await page.waitForSelector('.key')
   note('round: letter keyboard visible')
   await page.screenshot({ path: path.join(OUT, '02-letters.png'), fullPage: true })
 
-  // Type full alphabet — queue + fast scan ends in win or lose → price
-  for (const ch of 'ETAOINSHRDLCUMWFGYPBVKJXQZ') {
-    await page.keyboard.type(ch)
-    await page.waitForTimeout(40)
-  }
-
-  // Long listing titles scan slowly even with the fast-type queue
-  await page.waitForSelector('.price-input', { timeout: 90000 })
-  note('price: guess panel visible')
+  // Early exit with blank-space bonus
+  await page.getByRole('button', { name: /Have a Guess/i }).click()
+  await page.waitForSelector('.price-input', { timeout: 10000 })
+  note('price: guess panel after Have a Guess')
   await page.screenshot({ path: path.join(OUT, '03-price.png'), fullPage: true })
 
   await page.fill('.price-input', '29.99')
@@ -55,10 +57,12 @@ try {
   const brand = await page.locator('.buybox-brand').textContent()
   const stars = await page.locator('.stars').count()
   const price = await page.locator('.buybox-now').textContent()
+  const bonus = await page.locator('.blank-bonus').count()
   const href = await page.locator('a.btn-cart').getAttribute('href')
-  note(`reveal: brand=${brand?.trim()} stars=${stars} price=${price?.trim()}`)
+  note(`reveal: brand=${brand?.trim()} stars=${stars} price=${price?.trim()} bonus=${bonus}`)
   note(`affiliate: ${href}`)
 
+  if (bonus < 1) throw new Error('expected blank-bonus after Have a Guess')
   const okTag = href?.includes('tag=hangazon-21')
   const okUk = href?.includes('amazon.co.uk')
   if (!okTag || !okUk) throw new Error(`bad affiliate url: ${href}`)

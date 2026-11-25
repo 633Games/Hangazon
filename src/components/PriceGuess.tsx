@@ -14,7 +14,7 @@ export function PriceGuess({ value, onChange, onSubmit }: Props) {
       }}
     >
       <div className="price-input-row">
-        <span className="price-currency">$</span>
+        <span className="price-currency">£</span>
         <input
           id="price-guess"
           className="price-input"

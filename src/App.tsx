@@ -13,7 +13,8 @@ import './App.css'
 
 export default function App() {
   const game = useHangazonRound()
-  const revealed = game.phase === 'reveal'
+  const revealed =
+    game.phase === 'reveal' || game.letterOutcome === 'guess'
 
   useEffect(() => {
     if (game.phase !== 'letters') return
@@ -114,7 +115,11 @@ export default function App() {
               <LetterBoard
                 title={game.title}
                 guessed={game.guessed}
-                forceReveal={revealed || game.letterOutcome === 'lose'}
+                forceReveal={
+                  revealed ||
+                  game.letterOutcome === 'lose' ||
+                  game.letterOutcome === 'guess'
+                }
                 flight={game.flight}
                 onFlightDone={game.finishFlight}
               />
@@ -134,6 +139,16 @@ export default function App() {
                       pending={game.pendingLetters}
                       onGuess={game.guessLetter}
                     />
+                    <div className="early-guess-row">
+                      <button
+                        type="button"
+                        className="btn btn-guess"
+                        disabled={game.letterOutcome !== null}
+                        onClick={game.haveAGuess}
+                      >
+                        Have a Guess
+                      </button>
+                    </div>
                   </motion.div>
                 )}
                 {game.phase === 'price' && (
@@ -160,6 +175,8 @@ export default function App() {
                       product={game.product}
                       priceScore={game.priceScore}
                       priceGuess={game.priceGuess}
+                      blankBonus={game.blankBonus}
+                      blanksAtGuess={game.blanksAtGuess}
                       againLabel={game.mode === 'daily' ? 'Random' : 'Again'}
                       onAgain={game.playAgain}
                     />
