@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
-import { isLetterRevealed } from '../lib/hangman'
+import { isLetterRevealed, isWordRevealed, titleWords } from '../lib/hangman'
 import type { LetterFlight } from '../hooks/useHangazonRound'
 
 type Props = {
@@ -8,6 +8,10 @@ type Props = {
   forceReveal?: boolean
   flight: LetterFlight | null
   onFlightDone: () => void
+  /** When true, blank title words are hoverable/clickable guess targets. */
+  interactive?: boolean
+  selectedWord?: number | null
+  onWordClick?: (wordIndex: number) => void
 }
 
 const STEP_MS = 52
@@ -20,6 +24,9 @@ export function LetterBoard({
   forceReveal,
   flight,
   onFlightDone,
+  interactive = false,
+  selectedWord = null,
+  onWordClick,
 }: Props) {
   const slots = useMemo(() => {
     const out: { ch: string; flat: number }[] = []
@@ -32,6 +39,9 @@ export function LetterBoard({
     }
     return out
   }, [title])
+
+  const words = useMemo(() => titleWords(title), [title])
+  const displayWords = useMemo(() => title.split(' ').filter(Boolean), [title])
 
   const doneRef = useRef(onFlightDone)
   doneRef.current = onFlightDone
@@ -122,43 +132,80 @@ export function LetterBoard({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [flightId])
 
-  const words = title.split(' ')
   let flatCounter = 0
 
   return (
     <h1 className="listing-title" aria-label="Product title">
-      {words.map((word, wi) => (
-        <span className="listing-word" key={`${word}-${wi}`}>
-          {[...word].map((ch) => {
-            const flat = flatCounter++
-            const committed = forceReveal || isLetterRevealed(ch, guessed)
-            const justLanded = landed.has(flat)
-            const show = committed || justLanded
-            const scanning = flying && cursor === flat
+      {displayWords.map((rawWord, wi) => {
+        const norm = words[wi] ?? ''
+        const revealed =
+          forceReveal || (norm.length > 0 && isWordRevealed(norm, guessed))
+        const selected = interactive && selectedWord === wi
+        const canClick = interactive && !revealed && Boolean(onWordClick)
 
-            return (
-              <span
-                key={flat}
-                className={[
-                  'listing-char',
-                  show ? 'is-filled' : 'is-blank',
-                  scanning ? 'is-scan' : '',
-                  justLanded ? 'is-land' : '',
-                ]
-                  .filter(Boolean)
-                  .join(' ')}
-              >
-                {show ? ch : '_'}
-              </span>
-            )
-          })}
-          {wi < words.length - 1 ? (
-            <span className="listing-space" aria-hidden>
-              {' '}
+        const chars = [...rawWord].map((ch) => {
+          const flat = flatCounter++
+          const committed = forceReveal || isLetterRevealed(ch, guessed)
+          const justLanded = landed.has(flat)
+          const show = committed || justLanded
+          const scanning = flying && cursor === flat
+
+          return (
+            <span
+              key={flat}
+              className={[
+                'listing-char',
+                show ? 'is-filled' : 'is-blank',
+                scanning ? 'is-scan' : '',
+                justLanded ? 'is-land' : '',
+              ]
+                .filter(Boolean)
+                .join(' ')}
+            >
+              {show ? ch : '_'}
             </span>
-          ) : null}
-        </span>
-      ))}
+          )
+        })
+
+        const wordClass = [
+          'listing-word',
+          canClick ? 'is-guessable' : '',
+          selected ? 'is-selected' : '',
+          revealed && interactive ? 'is-revealed' : '',
+        ]
+          .filter(Boolean)
+          .join(' ')
+
+        const wordNode = canClick ? (
+          <button
+            type="button"
+            className={wordClass}
+            aria-pressed={selected}
+            aria-label={
+              revealed
+                ? `Word ${wi + 1} revealed: ${norm}`
+                : `Guess word ${wi + 1}, ${norm.length} letters`
+            }
+            title={`Click to guess this ${norm.length}-letter word`}
+            onClick={() => onWordClick?.(wi)}
+          >
+            {chars}
+          </button>
+        ) : (
+          <span className={wordClass}>{chars}</span>
+        )
+
+        return (
+          <span key={`${rawWord}-${wi}`} className="listing-word-wrap">
+            {wordNode}
+            {wi < displayWords.length - 1 ? (
+              <span className="listing-space" aria-hidden>
+                {' '}
+              </span>
+            ) : null}
+          </span>
+        )
+      })}
     </h1>
   )
 }

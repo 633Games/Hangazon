@@ -1,4 +1,4 @@
-import { useEffect } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
 import { CategoryChips } from './components/CategoryChips'
 import { Lives } from './components/Lives'
@@ -7,19 +7,37 @@ import { LetterBoard } from './components/LetterBoard'
 import { PriceGuess } from './components/PriceGuess'
 import { Reveal } from './components/Reveal'
 import { Stars } from './components/Stars'
-import { TitleGuess } from './components/TitleGuess'
+import {
+  TitleGuess,
+  type TitleGuessHandle,
+} from './components/TitleGuess'
 import { ZoomedProduct } from './components/ZoomedProduct'
 import { useHangazonRound } from './hooks/useHangazonRound'
 import './App.css'
 
 export default function App() {
   const game = useHangazonRound()
+  const titleGuessRef = useRef<TitleGuessHandle>(null)
+  const [titleGuessMode, setTitleGuessMode] = useState<'word' | 'title'>(
+    'word',
+  )
+  const [selectedTitleWord, setSelectedTitleWord] = useState<number | null>(
+    null,
+  )
   const revealed =
     game.phase === 'reveal' || game.letterOutcome === 'guess'
   const titleKnown =
     revealed ||
     game.letterOutcome === 'lose' ||
     game.letterOutcome === 'guess'
+
+  const onTitleGuessActiveChange = useCallback(
+    (state: { mode: 'word' | 'title'; wordIndex: number | null }) => {
+      setTitleGuessMode(state.mode)
+      setSelectedTitleWord(state.wordIndex)
+    },
+    [],
+  )
 
   useEffect(() => {
     if (game.phase !== 'letters') return
@@ -129,6 +147,15 @@ export default function App() {
                 forceReveal={titleKnown}
                 flight={game.flight}
                 onFlightDone={game.finishFlight}
+                interactive={
+                  game.phase === 'letters' && game.letterOutcome === null
+                }
+                selectedWord={
+                  titleGuessMode === 'word' ? selectedTitleWord : null
+                }
+                onWordClick={(index) =>
+                  titleGuessRef.current?.selectWord(index)
+                }
               />
 
               {(titleKnown || game.phase !== 'letters') && (
@@ -167,6 +194,7 @@ export default function App() {
                     className="buybox-shell"
                   >
                     <TitleGuess
+                      ref={titleGuessRef}
                       title={game.title}
                       guessed={game.guessed}
                       value={game.titleGuess}
@@ -175,6 +203,7 @@ export default function App() {
                       onSubmitTitle={game.submitTitleGuess}
                       disabled={game.letterOutcome !== null}
                       wrong={game.titleGuessWrong}
+                      onActiveChange={onTitleGuessActiveChange}
                     />
                     <p className="buybox-stock">In Stock</p>
                     <p className="buybox-ships">
