@@ -1,7 +1,6 @@
 import { motion, useAnimationControls } from 'framer-motion'
 import { useEffect } from 'react'
 import { zoomScale } from '../lib/hangman'
-import { HallwayLights } from './HallwayLights'
 
 type Props = {
   imageUrl: string
@@ -45,8 +44,6 @@ export function ZoomedProduct({
           transition={{ type: 'spring', stiffness: 120, damping: 18 }}
           draggable={false}
         />
-        {!revealed && <div className="zoom-vignette" aria-hidden />}
-        <HallwayLights misses={misses} revealed={revealed} />
       </div>
     </motion.div>
   )
