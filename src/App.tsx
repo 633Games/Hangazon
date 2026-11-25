@@ -64,7 +64,7 @@ export default function App() {
               ['--vibe' as string]: String(
                 Math.min(8, 1 + (game.typeSpeed - 1) * 0.35),
               ),
-              ['--vibe-amp' as string]: `${Math.min(2.8, 0.35 + game.typeSpeed * 0.09)}px`,
+              ['--vibe-amp' as string]: `${Math.min(2.1, 0.28 + game.typeSpeed * 0.07)}px`,
             } as CSSProperties)
           : undefined
       }
