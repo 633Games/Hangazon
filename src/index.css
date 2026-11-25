@@ -1,11 +1,23 @@
 :root {
-  --ink: #f5e8d6;
-  --cream: #f7efe3;
-  --muted: rgba(247, 239, 227, 0.72);
-  --ember: #ff7a30;
-  --font-display: 'Syne', 'Avenir Next', sans-serif;
-  --font-body: 'Figtree', 'Avenir Next', sans-serif;
-  color-scheme: dark;
+  /* 633.games × Amazon (simple storefront) */
+  --bg: #fffef2;
+  --paper: #ffffff;
+  --ink: #131921;
+  --ink-soft: #565959;
+  --line: #e3e6e6;
+  --navy: #131921;
+  --navy-2: #232f3e;
+  --lemon: #ffe566;
+  --lemon-deep: #f0d23a;
+  --peach: #e8a988;
+  --peach-deep: #d4896a;
+  --link: #007185;
+  --price: #b12704;
+  --hit: #067d62;
+  --miss: #c45500;
+  --font-display: 'Lilita One', 'Arial Black', sans-serif;
+  --font-body: 'Outfit', 'Avenir Next', sans-serif;
+  color-scheme: light;
   font-family: var(--font-body);
   font-synthesis: none;
   text-rendering: optimizeLegibility;
@@ -27,7 +39,7 @@ body,
 }
 
 body {
-  background: #12100e;
+  background: var(--bg);
   color: var(--ink);
 }
 
@@ -39,4 +51,8 @@ input {
 img {
   max-width: 100%;
   display: block;
+}
+
+a {
+  color: var(--link);
 }
