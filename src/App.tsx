@@ -31,39 +31,22 @@ export default function App() {
         <section className="hero">
           <motion.p
             className="brand"
-            initial={{ opacity: 0, y: 18 }}
+            initial={{ opacity: 0, y: 16 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.55 }}
+            transition={{ duration: 0.5 }}
           >
             Hangazon
-          </motion.p>
-          <motion.h1
-            className="hero-line"
-            initial={{ opacity: 0, y: 22 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.12, duration: 0.55 }}
-          >
-            Guess the product. Nail the price.
-          </motion.h1>
-          <motion.p
-            className="hero-sub"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 0.28, duration: 0.5 }}
-          >
-            A zoomed listing drops in. Type letters to reveal the name, then
-            score the sticker price from 0–100%.
           </motion.p>
           <motion.button
             type="button"
             className="btn btn-primary btn-lg"
             onClick={game.start}
-            initial={{ opacity: 0, y: 12 }}
+            initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.4, duration: 0.45 }}
+            transition={{ delay: 0.15, duration: 0.4 }}
             whileTap={{ scale: 0.98 }}
           >
-            Deal me a listing
+            Play
           </motion.button>
           <div className="hero-visual" aria-hidden>
             <img src={game.product.imageUrl} alt="" className="hero-img" />
@@ -78,7 +61,7 @@ export default function App() {
 
           <ZoomedProduct
             imageUrl={game.product.imageUrl}
-            alt={revealed ? game.product.title : 'Mystery product'}
+            alt={revealed ? game.product.title : 'Product'}
             misses={game.misses}
             revealed={revealed}
             shakeKey={game.shakeKey}
@@ -88,20 +71,23 @@ export default function App() {
             title={game.title}
             guessed={game.guessed}
             forceReveal={revealed || game.letterOutcome === 'lose'}
+            flight={game.flight}
+            onFlightDone={game.finishFlight}
           />
 
           <AnimatePresence mode="wait">
             {game.phase === 'letters' && (
               <motion.div
                 key="letters"
-                initial={{ opacity: 0, y: 12 }}
+                initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -8 }}
+                exit={{ opacity: 0, y: -6 }}
               >
                 <Keyboard
                   guessed={game.guessed}
                   title={game.title}
-                  disabled={game.letterOutcome !== null}
+                  disabled={game.letterOutcome !== null || game.flightBusy}
+                  pending={game.flight?.letter}
                   onGuess={game.guessLetter}
                 />
               </motion.div>
@@ -109,29 +95,27 @@ export default function App() {
             {game.phase === 'price' && (
               <motion.div
                 key="price"
-                initial={{ opacity: 0, y: 12 }}
+                initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -8 }}
+                exit={{ opacity: 0, y: -6 }}
               >
                 <PriceGuess
                   value={game.priceGuess}
                   onChange={game.setPriceGuess}
                   onSubmit={game.submitPrice}
-                  letterOutcome={game.letterOutcome}
                 />
               </motion.div>
             )}
             {game.phase === 'reveal' && game.priceScore !== null && (
               <motion.div
                 key="reveal"
-                initial={{ opacity: 0, y: 12 }}
+                initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
               >
                 <Reveal
                   product={game.product}
                   priceScore={game.priceScore}
                   priceGuess={game.priceGuess}
-                  letterOutcome={game.letterOutcome}
                   onAgain={game.playAgain}
                 />
               </motion.div>

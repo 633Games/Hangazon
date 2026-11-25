@@ -1,6 +1,7 @@
 import { motion, useAnimationControls } from 'framer-motion'
 import { useEffect } from 'react'
 import { zoomScale } from '../lib/hangman'
+import { HallwayLights } from './HallwayLights'
 
 type Props = {
   imageUrl: string
@@ -23,8 +24,8 @@ export function ZoomedProduct({
   useEffect(() => {
     if (shakeKey <= 0 || revealed) return
     void shake.start({
-      x: [0, -10, 10, -6, 6, 0],
-      transition: { duration: 0.35 },
+      x: [0, -8, 8, -4, 4, 0],
+      transition: { duration: 0.32 },
     })
   }, [shakeKey, revealed, shake])
 
@@ -38,13 +39,14 @@ export function ZoomedProduct({
           animate={{
             scale,
             filter: revealed
-              ? 'blur(0px)'
-              : `blur(${Math.max(0, 2.5 - misses * 0.35)}px)`,
+              ? 'blur(0px) brightness(1)'
+              : `blur(${Math.max(0, 2.4 - misses * 0.3)}px) brightness(${1 - misses * 0.04})`,
           }}
           transition={{ type: 'spring', stiffness: 120, damping: 18 }}
           draggable={false}
         />
         {!revealed && <div className="zoom-vignette" aria-hidden />}
+        <HallwayLights misses={misses} revealed={revealed} />
       </div>
     </motion.div>
   )

@@ -9,6 +9,12 @@ import { priceAccuracy } from '../lib/scoring'
 
 export type Phase = 'intro' | 'letters' | 'price' | 'reveal'
 
+export type LetterFlight = {
+  id: number
+  letter: string
+  hit: boolean
+}
+
 export function useHangazonRound() {
   const [product, setProduct] = useState<Product>(() => pickRandomProduct())
   const [phase, setPhase] = useState<Phase>('intro')
@@ -20,6 +26,8 @@ export function useHangazonRound() {
   const [priceGuess, setPriceGuess] = useState('')
   const [priceScore, setPriceScore] = useState<number | null>(null)
   const [shakeKey, setShakeKey] = useState(0)
+  const [flight, setFlight] = useState<LetterFlight | null>(null)
+  const [flightBusy, setFlightBusy] = useState(false)
 
   const title = useMemo(() => normalizeTitle(product.title), [product.title])
 
@@ -29,31 +37,41 @@ export function useHangazonRound() {
 
   const guessLetter = useCallback(
     (raw: string) => {
-      if (phase !== 'letters' || letterOutcome !== null) return
+      if (phase !== 'letters' || letterOutcome !== null || flightBusy) return
       const letter = raw.toUpperCase()
       if (!/^[A-Z]$/.test(letter) || guessed.has(letter)) return
 
-      const next = new Set(guessed)
-      next.add(letter)
-      setGuessed(next)
-
       const hit = title.includes(letter)
-      let nextMisses = misses
-      if (!hit) {
-        nextMisses = misses + 1
-        setMisses(nextMisses)
-        setShakeKey((k) => k + 1)
-      }
-
-      const won = isTitleSolved(title, next)
-      const lost = nextMisses >= MAX_MISSES
-      if (won || lost) {
-        setLetterOutcome(won ? 'win' : 'lose')
-        window.setTimeout(() => setPhase('price'), 700)
-      }
+      setFlightBusy(true)
+      setFlight({ id: Date.now(), letter, hit })
     },
-    [phase, letterOutcome, guessed, title, misses],
+    [phase, letterOutcome, flightBusy, guessed, title],
   )
+
+  const finishFlight = useCallback(() => {
+    if (!flight) return
+
+    const next = new Set(guessed)
+    next.add(flight.letter)
+    setGuessed(next)
+
+    let nextMisses = misses
+    if (!flight.hit) {
+      nextMisses = misses + 1
+      setMisses(nextMisses)
+      setShakeKey((k) => k + 1)
+    }
+
+    setFlight(null)
+    setFlightBusy(false)
+
+    const won = isTitleSolved(title, next)
+    const lost = nextMisses >= MAX_MISSES
+    if (won || lost) {
+      setLetterOutcome(won ? 'win' : 'lose')
+      window.setTimeout(() => setPhase('price'), 500)
+    }
+  }, [flight, guessed, misses, title])
 
   const submitPrice = useCallback(() => {
     if (phase !== 'price') return
@@ -72,6 +90,8 @@ export function useHangazonRound() {
     setLetterOutcome(null)
     setPriceGuess('')
     setPriceScore(null)
+    setFlight(null)
+    setFlightBusy(false)
   }, [product.id])
 
   return {
@@ -85,8 +105,11 @@ export function useHangazonRound() {
     setPriceGuess,
     priceScore,
     shakeKey,
+    flight,
+    flightBusy,
     start,
     guessLetter,
+    finishFlight,
     submitPrice,
     playAgain,
   }
