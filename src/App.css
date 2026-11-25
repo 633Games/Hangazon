@@ -36,7 +36,14 @@
   z-index: 20;
 }
 
-.mode-pill {
+.topbar-meta {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+}
+
+.mode-pill,
+.speed-pill {
   font-size: 0.72rem;
   font-weight: 700;
   letter-spacing: 0.08em;
@@ -47,6 +54,13 @@
   color: var(--lemon);
   border: 1px solid rgba(255, 229, 102, 0.32);
   backdrop-filter: blur(6px);
+}
+
+.speed-pill {
+  background: rgba(255, 229, 102, 0.28);
+  border-color: var(--lemon);
+  animation: key-pulse 0.45s ease infinite;
+  font-variant-numeric: tabular-nums;
 }
 
 .brand {

@@ -4,7 +4,7 @@ type Props = {
   guessed: ReadonlySet<string>
   title: string
   disabled?: boolean
-  pending?: string | null
+  pending?: ReadonlySet<string>
   onGuess: (letter: string) => void
 }
 
@@ -23,7 +23,7 @@ export function Keyboard({
             const used = guessed.has(letter)
             const hit = used && title.includes(letter)
             const miss = used && !hit
-            const isPending = pending === letter
+            const isPending = pending?.has(letter) ?? false
             return (
               <button
                 key={letter}

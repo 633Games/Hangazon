@@ -30,9 +30,16 @@ export default function App() {
       <header className="topbar">
         <p className="brand brand-bar">Hangazon</p>
         {game.phase !== 'intro' && (
-          <span className="mode-pill">
-            {game.mode === 'daily' ? 'Daily' : game.category}
-          </span>
+          <div className="topbar-meta">
+            {game.phase === 'letters' && game.typeSpeed > 1 && (
+              <span className="speed-pill" aria-label={`${game.typeSpeed}x speed`}>
+                {game.typeSpeed}×
+              </span>
+            )}
+            <span className="mode-pill">
+              {game.mode === 'daily' ? 'Daily' : game.category}
+            </span>
+          </div>
         )}
       </header>
 
@@ -105,10 +112,8 @@ export default function App() {
                     <Keyboard
                       guessed={game.guessed}
                       title={game.title}
-                      disabled={
-                        game.letterOutcome !== null || game.flightBusy
-                      }
-                      pending={game.flight?.letter}
+                      disabled={game.letterOutcome !== null}
+                      pending={game.pendingLetters}
                       onGuess={game.guessLetter}
                     />
                   </motion.div>

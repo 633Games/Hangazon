@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useState } from 'react'
+import { useCallback, useMemo, useRef, useState } from 'react'
 import {
   pickRandomProduct,
   type CategoryFilter,
@@ -25,7 +25,11 @@ export type LetterFlight = {
   id: number
   letter: string
   hit: boolean
+  /** Fast-type multiplier: 2 keys → 2×, 3 → 3×, … */
+  speed: number
 }
+
+const MAX_SPEED = 8
 
 function freshRoundState() {
   return {
@@ -61,9 +65,42 @@ export function useHangazonRound() {
   const [shakeKey, setShakeKey] = useState(0)
   const [flight, setFlight] = useState<LetterFlight | null>(null)
   const [flightBusy, setFlightBusy] = useState(false)
+  const [queue, setQueue] = useState<string[]>([])
+  const [typeSpeed, setTypeSpeed] = useState(1)
+
+  const guessedRef = useRef(guessed)
+  guessedRef.current = guessed
+  const queueRef = useRef(queue)
+  queueRef.current = queue
+  const flightRef = useRef(flight)
+  flightRef.current = flight
+  const comboRef = useRef(0)
+  const outcomeRef = useRef(letterOutcome)
+  outcomeRef.current = letterOutcome
 
   const title = useMemo(() => normalizeTitle(product.title), [product.title])
   const todayCategory = useMemo(() => dailyCategory(today), [today])
+
+  const bumpSpeed = useCallback((combo: number) => {
+    const speed = Math.min(MAX_SPEED, Math.max(1, combo))
+    setTypeSpeed(speed)
+    setFlight((f) => (f ? { ...f, speed } : f))
+    return speed
+  }, [])
+
+  const beginFlight = useCallback(
+    (letter: string, speed: number) => {
+      const hit = title.includes(letter)
+      setFlightBusy(true)
+      setFlight({
+        id: Date.now() + Math.random(),
+        letter,
+        hit,
+        speed,
+      })
+    },
+    [title],
+  )
 
   const resetBoard = useCallback((next: Product, nextMode: PlayMode) => {
     const fresh = freshRoundState()
@@ -78,10 +115,9 @@ export function useHangazonRound() {
     setFlight(fresh.flight)
     setFlightBusy(fresh.flightBusy)
     setShakeKey(0)
-  }, [])
-
-  const start = useCallback(() => {
-    setPhase('letters')
+    setQueue([])
+    setTypeSpeed(1)
+    comboRef.current = 0
   }, [])
 
   const startDaily = useCallback(() => {
@@ -103,41 +139,75 @@ export function useHangazonRound() {
 
   const guessLetter = useCallback(
     (raw: string) => {
-      if (phase !== 'letters' || letterOutcome !== null || flightBusy) return
+      if (phase !== 'letters' || outcomeRef.current !== null) return
       const letter = raw.toUpperCase()
-      if (!/^[A-Z]$/.test(letter) || guessed.has(letter)) return
+      if (!/^[A-Z]$/.test(letter)) return
+      if (guessedRef.current.has(letter)) return
+      if (flightRef.current?.letter === letter) return
+      if (queueRef.current.includes(letter)) return
 
-      const hit = title.includes(letter)
-      setFlightBusy(true)
-      setFlight({ id: Date.now(), letter, hit })
+      comboRef.current = Math.min(MAX_SPEED, comboRef.current + 1)
+      const speed = bumpSpeed(comboRef.current)
+
+      if (flightRef.current) {
+        setQueue((q) => [...q, letter])
+        return
+      }
+
+      beginFlight(letter, speed)
     },
-    [phase, letterOutcome, flightBusy, guessed, title],
+    [phase, bumpSpeed, beginFlight],
   )
 
   const finishFlight = useCallback(() => {
-    if (!flight) return
+    const current = flightRef.current
+    if (!current) return
 
-    const next = new Set(guessed)
-    next.add(flight.letter)
-    setGuessed(next)
+    const nextGuessed = new Set(guessedRef.current)
+    nextGuessed.add(current.letter)
+    setGuessed(nextGuessed)
+    guessedRef.current = nextGuessed
 
     let nextMisses = misses
-    if (!flight.hit) {
+    if (!current.hit) {
       nextMisses = misses + 1
       setMisses(nextMisses)
       setShakeKey((k) => k + 1)
     }
 
-    setFlight(null)
-    setFlightBusy(false)
+    comboRef.current = Math.max(0, comboRef.current - 1)
 
-    const won = isTitleSolved(title, next)
+    const won = isTitleSolved(title, nextGuessed)
     const lost = nextMisses >= MAX_MISSES
     if (won || lost) {
+      setQueue([])
+      queueRef.current = []
+      setFlight(null)
+      flightRef.current = null
+      setFlightBusy(false)
+      setTypeSpeed(1)
+      comboRef.current = 0
       setLetterOutcome(won ? 'win' : 'lose')
-      window.setTimeout(() => setPhase('price'), 500)
+      window.setTimeout(() => setPhase('price'), 420)
+      return
     }
-  }, [flight, guessed, misses, title])
+
+    const pending = queueRef.current
+    if (pending.length > 0) {
+      const [nextLetter, ...rest] = pending
+      setQueue(rest)
+      queueRef.current = rest
+      const speed = bumpSpeed(Math.max(1, comboRef.current))
+      beginFlight(nextLetter!, speed)
+      return
+    }
+
+    setFlight(null)
+    flightRef.current = null
+    setFlightBusy(false)
+    setTypeSpeed(1)
+    comboRef.current = 0
+  }, [misses, title, bumpSpeed, beginFlight])
 
   const submitPrice = useCallback(() => {
     if (phase !== 'price') return
@@ -152,7 +222,6 @@ export function useHangazonRound() {
     }
   }, [phase, priceGuess, product.price, mode, today])
 
-  /** After a round: daily → random; random → another random. */
   const playAgain = useCallback(() => {
     if (mode === 'daily') {
       markDailyDone(today)
@@ -165,6 +234,12 @@ export function useHangazonRound() {
     const next = pickRandomProduct(category, product.id)
     resetBoard(next, 'random')
   }, [mode, today, category, product.id, resetBoard])
+
+  const pendingLetters = useMemo(() => {
+    const set = new Set(queue)
+    if (flight?.letter) set.add(flight.letter)
+    return set
+  }, [queue, flight?.letter])
 
   return {
     product,
@@ -184,7 +259,9 @@ export function useHangazonRound() {
     shakeKey,
     flight,
     flightBusy,
-    start,
+    queue,
+    typeSpeed,
+    pendingLetters,
     startDaily,
     startRandom,
     guessLetter,

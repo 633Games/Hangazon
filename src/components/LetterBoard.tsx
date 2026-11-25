@@ -13,6 +13,7 @@ type Props = {
 
 const STEP_MS = 68
 const LAND_MS = 140
+const MISS_TAIL_MS = 110
 
 export function LetterBoard({
   title,
@@ -35,6 +36,8 @@ export function LetterBoard({
 
   const doneRef = useRef(onFlightDone)
   doneRef.current = onFlightDone
+  const speedRef = useRef(1)
+  speedRef.current = Math.max(1, flight?.speed ?? 1)
 
   const [cursor, setCursor] = useState(-1)
   const [landed, setLanded] = useState<Set<number>>(() => new Set())
@@ -53,45 +56,70 @@ export function LetterBoard({
     const targets = new Set(
       slots.filter((s) => s.ch === flight.letter).map((s) => s.flat),
     )
+    const n = Math.max(1, slots.length)
+    let i = 0
+    let acc = 0
+    let last = performance.now()
+    let landing = false
+    let landAcc = 0
+    let raf = 0
 
     setFlying(true)
     setCursor(0)
     setLanded(new Set())
 
-    const timers: number[] = []
-    const n = slots.length
-
-    for (let i = 0; i < n; i++) {
-      timers.push(
-        window.setTimeout(() => {
-          if (cancelled) return
-          setCursor(i)
-          if (flight.hit && targets.has(i)) {
-            setLanded((prev) => {
-              const next = new Set(prev)
-              next.add(i)
-              return next
-            })
-          }
-        }, i * STEP_MS),
-      )
+    const finish = () => {
+      if (cancelled) return
+      setFlying(false)
+      setCursor(-1)
+      doneRef.current()
     }
 
-    const doneAt = Math.max(1, n) * STEP_MS + (flight.hit ? LAND_MS : 110)
-    timers.push(
-      window.setTimeout(() => {
-        if (cancelled) return
-        setFlying(false)
-        setCursor(-1)
-        doneRef.current()
-      }, doneAt),
-    )
+    const tick = (now: number) => {
+      if (cancelled) return
+      const dt = now - last
+      last = now
+      const step = STEP_MS / speedRef.current
 
+      if (landing) {
+        landAcc += dt
+        const need =
+          (flight.hit ? LAND_MS : MISS_TAIL_MS) / speedRef.current
+        if (landAcc >= need) {
+          finish()
+          return
+        }
+        raf = requestAnimationFrame(tick)
+        return
+      }
+
+      acc += dt
+      while (acc >= step && i < n) {
+        acc -= step
+        const at = i
+        setCursor(at)
+        if (flight.hit && targets.has(at)) {
+          setLanded((prev) => {
+            const next = new Set(prev)
+            next.add(at)
+            return next
+          })
+        }
+        i += 1
+      }
+
+      if (i >= n) {
+        landing = true
+        landAcc = 0
+      }
+      raf = requestAnimationFrame(tick)
+    }
+
+    raf = requestAnimationFrame(tick)
     return () => {
       cancelled = true
-      timers.forEach((t) => window.clearTimeout(t))
+      cancelAnimationFrame(raf)
     }
-    // Only re-run when a new flight id starts
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [flightId])
 
@@ -99,7 +127,11 @@ export function LetterBoard({
   let flatCounter = 0
 
   return (
-    <div className="letter-board" aria-label="Product title">
+    <div
+      className="letter-board"
+      aria-label="Product title"
+      data-speed={flight?.speed ?? 1}
+    >
       {words.map((word, wi) => (
         <div className="letter-word" key={`${word}-${wi}`}>
           {[...word].map((ch) => {
@@ -135,7 +167,7 @@ export function LetterBoard({
                       animate={{ opacity: 1, y: 0, scale: 1 }}
                       transition={{
                         type: 'spring',
-                        stiffness: 460,
+                        stiffness: 460 + (flight?.speed ?? 1) * 40,
                         damping: 24,
                       }}
                     >
