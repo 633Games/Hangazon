@@ -23,7 +23,7 @@ function note(msg) {
 try {
   await page.goto(BASE, { waitUntil: 'networkidle' })
   await page.waitForSelector('.brand-hero')
-  note('hero: Hangazon brand visible')
+  note('hero: Hamazon brand visible')
 
   const hasSearch = await page.locator('.topbar-search').isVisible()
   const hasSubnav = await page.locator('.subnav').isVisible()

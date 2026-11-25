@@ -33,10 +33,10 @@ export default function App() {
   return (
     <div className="app">
       <header className="topbar">
-        <p className="brand brand-bar">Hangazon</p>
+        <p className="brand brand-bar">Hamazon</p>
         <div className="topbar-search" aria-hidden>
           <span className="topbar-dept">All</span>
-          <span className="topbar-field">Search Hangazon</span>
+          <span className="topbar-field">Search Hamazon</span>
           <span className="topbar-go">Go</span>
         </div>
         {game.phase !== 'intro' && (
@@ -70,7 +70,7 @@ export default function App() {
             <img src={game.product.imageUrl} alt="" className="hero-img" />
           </div>
           <div className="hero-copy">
-            <p className="brand brand-hero">Hangazon</p>
+            <p className="brand brand-hero">Hamazon</p>
             <CategoryChips value={game.category} onChange={game.setCategory} />
             <div className="hero-actions">
               <button
@@ -96,7 +96,7 @@ export default function App() {
       ) : (
         <main className="round round-pdp">
           <p className="breadcrumb" aria-hidden>
-            Hangazon › {game.product.category} › Listing
+            Hamazon › {game.product.category} › Listing
           </p>
 
           <div className="pdp">
@@ -158,7 +158,7 @@ export default function App() {
                   >
                     <p className="buybox-muted">Guess the listing title</p>
                     <p className="buybox-stock">In Stock</p>
-                    <p className="buybox-ships">Ships from Hangazon · Sold by demo</p>
+                    <p className="buybox-ships">Ships from Hamazon · Sold by demo</p>
                     <button
                       type="button"
                       className="btn btn-guess buybox-cta"
