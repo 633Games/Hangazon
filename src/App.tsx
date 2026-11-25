@@ -145,13 +145,13 @@ export default function App() {
           <p id="you-died-label" className="you-died">
             YOU DIED
           </p>
-          <p className="death-sub">Streak breaks · out of attempts</p>
+          <p className="death-sub">Climb over · Clears reset</p>
           <button
             type="button"
             className="btn btn-ghost death-next"
-            onClick={game.continueAfterDeath}
+            onClick={game.endClimbAfterDeath}
           >
-            Next
+            Start again
           </button>
         </div>
       )}
@@ -200,7 +200,7 @@ export default function App() {
           <div className="hero-copy">
             <p className="brand brand-hero">Hangazon</p>
             <p className="hero-tag">
-              Clear a listing, unlock the next. How far can you climb?
+              Clear listings to climb. Fail once and the run is over.
             </p>
             <CategoryChips value={game.category} onChange={game.setCategory} />
             <div className="hero-actions">
@@ -217,8 +217,8 @@ export default function App() {
       ) : (
         <main className="ladder">
           <p className="ladder-goal">
-            Get as many clears as you can — finish one listing to unlock the
-            next.
+            Clear each listing to unlock the next. One fail ends the climb —
+            back to listing 1.
           </p>
 
           {game.history.map((entry, i) => (

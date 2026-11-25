@@ -3,7 +3,6 @@ import { type CategoryFilter } from '../data/products'
 import {
   buildLadder,
   type LadderHistoryEntry,
-  type LadderResult,
   type SealedProduct,
 } from '../lib/ladder'
 import {
@@ -307,12 +306,21 @@ export function useHangazonRound() {
     }
   }, [clearFlights])
 
-  /** After YOU DIED, continue into the price listing (blood stays until next unlock). */
-  const continueAfterDeath = useCallback(() => {
+  /**
+   * Roguelike: YOU DIED ends the whole climb.
+   * Clears reset; back to intro — must Start climb again from listing 1.
+   */
+  const endClimbAfterDeath = useCallback(() => {
     if (outcomeRef.current !== 'lose') return
-    if (phase !== 'letters') return
-    setPhase('price')
-  }, [phase])
+    unlockGenRef.current += 1
+    clearsRef.current = 0
+    setClears(0)
+    setHistory([])
+    setActiveIndex(0)
+    setLadder(buildLadder(categoryRef.current))
+    resetActiveBoard()
+    setPhase('intro')
+  }, [resetActiveBoard])
 
   const submitTitleGuess = useCallback(() => {
     if (phase !== 'letters' || outcomeRef.current !== null) return
@@ -369,19 +377,17 @@ export function useHangazonRound() {
       if (unlockGenRef.current !== expectedGen) return
       unlockGenRef.current += 1
 
+      // Only clears unlock the next rung — a fail ends the climb via endClimbAfterDeath.
+      if (entry.result !== 'cleared') return
+
       setHistory((h) => [...h, entry])
 
-      if (entry.result === 'cleared') {
-        const nextClears = clearsRef.current + 1
-        clearsRef.current = nextClears
-        setClears(nextClears)
-        if (nextClears > bestRef.current) {
-          bestRef.current = nextClears
-          setBestClears(nextClears)
-        }
-      } else {
-        clearsRef.current = 0
-        setClears(0)
+      const nextClears = clearsRef.current + 1
+      clearsRef.current = nextClears
+      setClears(nextClears)
+      if (nextClears > bestRef.current) {
+        bestRef.current = nextClears
+        setBestClears(nextClears)
       }
 
       const idx = activeIndexRef.current
@@ -419,8 +425,6 @@ export function useHangazonRound() {
     setPriceScore(score)
     setPhase('reveal')
 
-    const result: LadderResult =
-      letterOutcome === 'lose' ? 'failed' : 'cleared'
     const gen = unlockGenRef.current
 
     // Brief beat on the score, then unlock the next rung + scroll
@@ -428,7 +432,7 @@ export function useHangazonRound() {
       unlockNext(
         {
           product,
-          result,
+          result: 'cleared',
           priceScore: score,
           priceGuess,
           blankBonus: bonus,
@@ -450,12 +454,10 @@ export function useHangazonRound() {
   /** Manual advance from reveal if auto-timer hasn't fired yet. */
   const advanceLadder = useCallback(() => {
     if (phase !== 'reveal' || priceScore === null) return
-    const result: LadderResult =
-      letterOutcome === 'lose' ? 'failed' : 'cleared'
     unlockNext(
       {
         product,
-        result,
+        result: 'cleared',
         priceScore,
         priceGuess,
         blankBonus,
@@ -466,7 +468,6 @@ export function useHangazonRound() {
   }, [
     phase,
     priceScore,
-    letterOutcome,
     product,
     priceGuess,
     blankBonus,
@@ -511,7 +512,7 @@ export function useHangazonRound() {
     startClimb,
     guessLetter,
     finishFlight,
-    continueAfterDeath,
+    endClimbAfterDeath,
     submitTitleGuess,
     submitWordGuess,
     submitPrice,
