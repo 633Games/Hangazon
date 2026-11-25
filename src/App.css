@@ -287,17 +287,15 @@
   flex-shrink: 0;
 }
 
-/* Clinton logo — light plate so black ink reads on navy topbar */
+/* Clinton logo — transparent on navy (no plate) */
 .brand-logo-link {
   flex-shrink: 0;
   display: inline-flex;
   align-items: center;
   line-height: 0;
   text-decoration: none;
-  background: #fff;
-  border-radius: 6px;
-  padding: 0.12rem 0.35rem 0.18rem;
-  box-shadow: 0 1px 0 rgba(0, 0, 0, 0.18);
+  background: transparent;
+  padding: 0;
 }
 
 .brand-logo {
