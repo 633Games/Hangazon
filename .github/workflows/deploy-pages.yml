@@ -8,7 +8,7 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: read
+  contents: write
   pages: write
   id-token: write
 
@@ -17,7 +17,7 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  build:
+  build-and-publish:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -27,13 +27,22 @@ jobs:
           cache: npm
       - run: npm ci
       - run: npm run build:pages
+      # Branch deploy (works when Settings → Pages → Deploy from a branch → gh-pages / root)
+      - name: Publish dist to gh-pages
+        uses: peaceiris/actions-gh-pages@v4
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./dist
+          force_orphan: true
+      # Also try Actions Pages API (works when Settings → Pages → Source = GitHub Actions)
       - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@v3
         with:
           path: dist
+        continue-on-error: true
 
-  deploy:
-    needs: build
+  deploy-actions:
+    needs: build-and-publish
     runs-on: ubuntu-latest
     environment:
       name: github-pages
@@ -41,3 +50,4 @@ jobs:
     steps:
       - id: deployment
         uses: actions/deploy-pages@v4
+        continue-on-error: true
