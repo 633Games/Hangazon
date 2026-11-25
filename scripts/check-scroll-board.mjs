@@ -28,7 +28,7 @@ await page.waitForSelector('#scroll-player-name', { timeout: 10000 })
 await page.fill('#scroll-player-name', 'TestRunner')
 await page.getByRole('button', { name: /Save score/i }).click()
 await page.waitForSelector('.climb-home')
-const youRow = await page.locator('.scroll-board-table tr.is-you').innerText()
+const youRow = await page.locator('.scroll-board-row.is-you').innerText()
 const afterAvg = await page.locator('.scroll-board-avgs').innerText()
 
 console.log(

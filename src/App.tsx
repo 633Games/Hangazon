@@ -231,14 +231,17 @@ export default function App() {
                 height={627}
                 decoding="async"
               />
-              <img
-                className="climb-logo-figure"
-                src={`${import.meta.env.BASE_URL}hangazon-logo-figure.png`}
-                alt=""
-                width={800}
-                height={627}
-                decoding="async"
-              />
+              {/* Animate a wrapper — iOS often skips CSS transforms on bare <img> */}
+              <div className="climb-logo-figure-swing">
+                <img
+                  className="climb-logo-figure"
+                  src={`${import.meta.env.BASE_URL}hangazon-logo-figure.png`}
+                  alt=""
+                  width={800}
+                  height={627}
+                  decoding="async"
+                />
+              </div>
             </div>
             <button
               type="button"

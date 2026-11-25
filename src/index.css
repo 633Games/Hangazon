@@ -133,7 +133,9 @@ a {
   .brand-hero,
   .hero-tag,
   .cats,
-  .hero-actions {
+  .hero-actions,
+  .climb-logo-figure-swing,
+  .climb-home-cta {
     animation: none !important;
     opacity: 1 !important;
     transform: none !important;
