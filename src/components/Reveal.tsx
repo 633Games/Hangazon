@@ -6,10 +6,17 @@ type Props = {
   product: Product
   priceScore: number
   priceGuess: string
+  againLabel?: string
   onAgain: () => void
 }
 
-export function Reveal({ product, priceScore, priceGuess, onAgain }: Props) {
+export function Reveal({
+  product,
+  priceScore,
+  priceGuess,
+  againLabel = 'Again',
+  onAgain,
+}: Props) {
   const guessNum = Number.parseFloat(priceGuess.replace(/[^0-9.]/g, ''))
   const href = affiliateUrl(product.asin)
 
@@ -22,6 +29,7 @@ export function Reveal({ product, priceScore, priceGuess, onAgain }: Props) {
       >
         <span className="score-value">{priceScore}%</span>
       </div>
+      <p className="reveal-aisle">{product.category}</p>
       <h2 className="reveal-title">{product.title}</h2>
       <p className="reveal-prices">
         <strong>
@@ -40,7 +48,7 @@ export function Reveal({ product, priceScore, priceGuess, onAgain }: Props) {
           Amazon
         </a>
         <button type="button" className="btn btn-ghost" onClick={onAgain}>
-          Again
+          {againLabel}
         </button>
       </div>
     </div>

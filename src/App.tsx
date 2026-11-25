@@ -1,5 +1,6 @@
 import { useEffect } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
+import { CategoryChips } from './components/CategoryChips'
 import { Gallows } from './components/Gallows'
 import { Keyboard } from './components/Keyboard'
 import { LetterBoard } from './components/LetterBoard'
@@ -27,6 +28,11 @@ export default function App() {
     <div className="app">
       <header className="topbar">
         <p className="brand brand-bar">Hangazon</p>
+        {game.phase !== 'intro' && (
+          <span className="mode-pill">
+            {game.mode === 'daily' ? 'Daily' : game.category}
+          </span>
+        )}
       </header>
 
       {game.phase === 'intro' ? (
@@ -36,15 +42,34 @@ export default function App() {
           </div>
           <div className="hero-copy">
             <p className="brand brand-hero">Hangazon</p>
-            <button type="button" className="btn btn-primary btn-lg" onClick={game.start}>
-              Play
-            </button>
+            <CategoryChips value={game.category} onChange={game.setCategory} />
+            <div className="hero-actions">
+              <button
+                type="button"
+                className="btn btn-primary btn-lg"
+                onClick={game.startDaily}
+                disabled={game.dailyDone}
+              >
+                {game.dailyDone ? 'Daily done' : `Daily · ${game.todayCategory}`}
+              </button>
+              <button
+                type="button"
+                className="btn btn-ghost btn-lg"
+                onClick={() => game.startRandom(game.category)}
+              >
+                Random
+              </button>
+            </div>
           </div>
         </section>
       ) : (
         <main className="round">
           <div className="round-top">
-            {game.phase === 'letters' ? <Gallows misses={game.misses} /> : <span />}
+            {game.phase === 'letters' ? (
+              <Gallows misses={game.misses} />
+            ) : (
+              <span />
+            )}
           </div>
 
           <div className="store-well">
@@ -76,7 +101,9 @@ export default function App() {
                     <Keyboard
                       guessed={game.guessed}
                       title={game.title}
-                      disabled={game.letterOutcome !== null || game.flightBusy}
+                      disabled={
+                        game.letterOutcome !== null || game.flightBusy
+                      }
                       pending={game.flight?.letter}
                       onGuess={game.guessLetter}
                     />
@@ -106,6 +133,7 @@ export default function App() {
                       product={game.product}
                       priceScore={game.priceScore}
                       priceGuess={game.priceGuess}
+                      againLabel={game.mode === 'daily' ? 'Random' : 'Again'}
                       onAgain={game.playAgain}
                     />
                   </motion.div>

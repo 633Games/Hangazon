@@ -15,6 +15,18 @@
   color: #fff;
 }
 
+.mode-pill {
+  font-size: 0.78rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  padding: 0.28rem 0.65rem;
+  border-radius: 999px;
+  background: rgba(255, 229, 102, 0.16);
+  color: var(--lemon);
+  border: 1px solid rgba(255, 229, 102, 0.35);
+}
+
 .brand {
   margin: 0;
   font-family: var(--font-display);
@@ -78,7 +90,51 @@
   display: grid;
   gap: 0.85rem;
   justify-items: start;
-  max-width: 40rem;
+  max-width: 42rem;
+}
+
+.hero-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.55rem;
+}
+
+.cats {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+}
+
+.cat {
+  appearance: none;
+  border: 1px solid rgba(19, 25, 33, 0.18);
+  background: rgba(255, 255, 255, 0.88);
+  color: var(--ink);
+  border-radius: 999px;
+  padding: 0.35rem 0.7rem;
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.cat.is-on {
+  background: var(--navy);
+  border-color: var(--navy);
+  color: var(--lemon);
+}
+
+.cat:disabled {
+  opacity: 0.35;
+  cursor: default;
+}
+
+.reveal-aisle {
+  margin: 0;
+  font-size: 0.78rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--ink-soft);
 }
 
 .round {
