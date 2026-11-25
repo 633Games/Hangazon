@@ -223,24 +223,27 @@ export default function App() {
         <div className="lobby">
           <section className="climb-home" aria-label="Hangazon Climb">
             <div className="climb-logo" role="img" aria-label="Hangazon">
-              <img
-                className="climb-logo-base"
-                src={`${import.meta.env.BASE_URL}hangazon-logo-base.png`}
-                alt=""
-                width={800}
-                height={627}
-                decoding="async"
-              />
-              {/* Animate a wrapper — iOS often skips CSS transforms on bare <img> */}
-              <div className="climb-logo-figure-swing">
+              {/* One stage box so base + figure share identical pixel alignment */}
+              <div className="climb-logo-stage">
                 <img
-                  className="climb-logo-figure"
-                  src={`${import.meta.env.BASE_URL}hangazon-logo-figure.png`}
+                  className="climb-logo-base"
+                  src={`${import.meta.env.BASE_URL}hangazon-logo-base.png`}
                   alt=""
                   width={800}
                   height={627}
                   decoding="async"
                 />
+                {/* Animate wrapper — same inset as base; pivot at rope/arrow tip */}
+                <div className="climb-logo-figure-swing">
+                  <img
+                    className="climb-logo-figure"
+                    src={`${import.meta.env.BASE_URL}hangazon-logo-figure.png`}
+                    alt=""
+                    width={800}
+                    height={627}
+                    decoding="async"
+                  />
+                </div>
               </div>
             </div>
             <button
