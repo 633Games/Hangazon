@@ -1,21 +1,15 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { useCallback, useMemo, useRef, useState } from 'react'
 import {
-  pickRandomProduct,
   type CategoryFilter,
   type Product,
 } from '../data/products'
+import { pickCatalogProduct } from '../lib/catalog'
 import {
   dailyCategory,
   dailyKey,
   isDailyDone,
   markDailyDone,
-  pickDailyProduct,
 } from '../lib/daily'
-import {
-  fetchCatalogProduct,
-  refreshCatalogStatus,
-  type CatalogSource,
-} from '../lib/catalog'
 import {
   isTitleSolved,
   MAX_MISSES,
@@ -44,7 +38,6 @@ function freshRoundState() {
     priceScore: null as number | null,
     flight: null as LetterFlight | null,
     flightBusy: false,
-    shakeKey: 0,
   }
 }
 
@@ -56,10 +49,11 @@ export function useHangazonRound() {
   )
   const [dailyDone, setDailyDone] = useState(() => isDailyDone(today))
   const [product, setProduct] = useState<Product>(() =>
-    isDailyDone(today) ? pickRandomProduct('All') : pickDailyProduct(today),
+    pickCatalogProduct({
+      mode: isDailyDone(today) ? 'random' : 'daily',
+      category: 'All',
+    }),
   )
-  const [catalogSource, setCatalogSource] = useState<CatalogSource>('sample')
-  const [loading, setLoading] = useState(false)
   const [phase, setPhase] = useState<Phase>('intro')
   const [guessed, setGuessed] = useState<Set<string>>(() => new Set())
   const [misses, setMisses] = useState(0)
@@ -89,17 +83,6 @@ export function useHangazonRound() {
   const title = useMemo(() => normalizeTitle(product.title), [product.title])
   const todayCategory = useMemo(() => dailyCategory(today), [today])
 
-  useEffect(() => {
-    void refreshCatalogStatus()
-    void fetchCatalogProduct({
-      mode: isDailyDone(today) ? 'random' : 'daily',
-      category: 'All',
-    }).then((r) => {
-      setProduct(r.product)
-      setCatalogSource(r.source)
-    })
-  }, [today])
-
   const bumpSpeed = useCallback((combo: number) => {
     const speed = Math.min(MAX_SPEED, Math.max(1, combo))
     setTypeSpeed(speed)
@@ -128,45 +111,33 @@ export function useHangazonRound() {
     setPhase('intro')
     setGuessed(fresh.guessed)
     setMisses(fresh.misses)
+    missesRef.current = 0
     setLetterOutcome(fresh.letterOutcome)
     setPriceGuess(fresh.priceGuess)
     setPriceScore(fresh.priceScore)
     setFlight(fresh.flight)
+    flightRef.current = null
     setFlightBusy(fresh.flightBusy)
     setShakeKey(0)
     setQueue([])
+    queueRef.current = []
     setTypeSpeed(1)
     comboRef.current = 0
   }, [])
 
-  const startDaily = useCallback(async () => {
-    setLoading(true)
-    try {
-      const r = await fetchCatalogProduct({ mode: 'daily', category: 'All' })
-      setCatalogSource(r.source)
-      setCategory(r.product.category)
-      resetBoard(r.product, 'daily')
-      setPhase('letters')
-    } finally {
-      setLoading(false)
-    }
+  const startDaily = useCallback(() => {
+    const next = pickCatalogProduct({ mode: 'daily' })
+    setCategory(next.category)
+    resetBoard(next, 'daily')
+    setPhase('letters')
   }, [resetBoard])
 
   const startRandom = useCallback(
-    async (filter: CategoryFilter = category) => {
-      setLoading(true)
-      try {
-        const r = await fetchCatalogProduct({
-          mode: 'random',
-          category: filter,
-        })
-        setCatalogSource(r.source)
-        setCategory(filter)
-        resetBoard(r.product, 'random')
-        setPhase('letters')
-      } finally {
-        setLoading(false)
-      }
+    (filter: CategoryFilter = category) => {
+      const next = pickCatalogProduct({ mode: 'random', category: filter })
+      setCategory(filter)
+      resetBoard(next, 'random')
+      setPhase('letters')
     },
     [category, resetBoard],
   )
@@ -257,34 +228,27 @@ export function useHangazonRound() {
     }
   }, [phase, priceGuess, product.price, mode, today])
 
-  const playAgain = useCallback(async () => {
-    setLoading(true)
-    try {
-      if (mode === 'daily') {
-        markDailyDone(today)
-        setDailyDone(true)
-        setCategory('All')
-        const r = await fetchCatalogProduct({
-          mode: 'random',
-          category: 'All',
-          excludeId: product.id,
-        })
-        setCatalogSource(r.source)
-        resetBoard(r.product, 'random')
-        setPhase('letters')
-        return
-      }
-      const r = await fetchCatalogProduct({
+  const playAgain = useCallback(() => {
+    if (mode === 'daily') {
+      markDailyDone(today)
+      setDailyDone(true)
+      setCategory('All')
+      const next = pickCatalogProduct({
         mode: 'random',
-        category,
+        category: 'All',
         excludeId: product.id,
       })
-      setCatalogSource(r.source)
-      resetBoard(r.product, 'random')
+      resetBoard(next, 'random')
       setPhase('letters')
-    } finally {
-      setLoading(false)
+      return
     }
+    const next = pickCatalogProduct({
+      mode: 'random',
+      category,
+      excludeId: product.id,
+    })
+    resetBoard(next, 'random')
+    setPhase('letters')
   }, [mode, today, category, product.id, resetBoard])
 
   const pendingLetters = useMemo(() => {
@@ -302,8 +266,6 @@ export function useHangazonRound() {
     setCategory,
     todayCategory,
     dailyDone,
-    catalogSource,
-    loading,
     guessed,
     misses,
     letterOutcome,

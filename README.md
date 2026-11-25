@@ -1,41 +1,35 @@
 # Hangazon
 
-Hangman meets the storefront: zoomed product → letter scan → price score → Amazon Associates link.
+Hangman meets the storefront: zoomed product → letter scan → price score → baked Amazon Associates link.
 
-## Live Amazon listings
+## Catalog (no API)
 
-Browsers **cannot** read Amazon cookies or scrape the storefront. Real listings use the official **Product Advertising API (PA-API 5.0)** on the server.
+Products live in `src/data/products.ts`. Each listing has:
 
-Set these secrets (never in client code):
+- `title` — hangman answer (A–Z + spaces)
+- `listingTitle`, `brand`, `price`, `rating`, … — buy-box copy
+- `affiliateUrl` — your Associates link (`tag=hangazon-21` on amazon.co.uk)
 
-| Secret | What |
-| --- | --- |
-| `AMAZON_PAAPI_ACCESS_KEY` | PA-API access key |
-| `AMAZON_PAAPI_SECRET_KEY` | PA-API secret key |
-| `AMAZON_ASSOCIATE_TAG` | Associates tracking id (`yourtag-20`) |
-
-Optional: `AMAZON_MARKETPLACE` (default `www.amazon.com`).
-
-Without credentials the app uses the **sample catalog** and still plays fine.
+Edit that file to add/change SKUs. Nothing is pulled live.
 
 ## Develop
 
 ```bash
 npm install
-npm run dev          # Vite + /api middleware
+npm run dev
 ```
 
 ```bash
 npm run build
-npm start            # static dist + /api on :8787
+npm run preview
 ```
 
 ## Play
 
-- **Daily** — date-hashed aisle + listing (same day = same product when live)
-- **Random** — aisle chips filter the search
+- **Daily** — date-hashed aisle + listing
+- **Random** — aisle chips filter the catalog
 - Fast-type: queue keys; 2→2× scan, 3→3×, …
 
 ## Stack
 
-Vite · React · TypeScript · Framer Motion · amazon-paapi
+Vite · React · TypeScript · Framer Motion

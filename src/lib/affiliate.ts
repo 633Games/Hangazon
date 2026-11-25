@@ -1,17 +1,25 @@
-import { getAssociateTag } from './catalog'
+import { ASSOCIATE_TAG } from './catalog'
 
-/** Build an Associates URL. Tag comes from /api/status when live. */
-export function affiliateUrl(asin: string, detailUrl?: string | null): string {
-  if (detailUrl) {
+/**
+ * Prefer the baked affiliate URL on the product.
+ * Falls back to a UK dp link with hangazon-21.
+ */
+export function affiliateUrl(
+  asin: string,
+  bakedUrl?: string | null,
+): string {
+  if (bakedUrl) {
     try {
-      const u = new URL(detailUrl)
-      u.searchParams.set('tag', getAssociateTag())
+      const u = new URL(bakedUrl)
+      u.searchParams.set('tag', ASSOCIATE_TAG)
       return u.toString()
     } catch {
       /* fall through */
     }
   }
-  const url = new URL(`https://www.amazon.com/dp/${encodeURIComponent(asin)}`)
-  url.searchParams.set('tag', getAssociateTag())
+  const url = new URL(
+    `https://www.amazon.co.uk/dp/${encodeURIComponent(asin)}`,
+  )
+  url.searchParams.set('tag', ASSOCIATE_TAG)
   return url.toString()
 }

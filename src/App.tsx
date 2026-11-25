@@ -29,10 +29,18 @@ export default function App() {
     <div className="app">
       <header className="topbar">
         <p className="brand brand-bar">Hangazon</p>
+        <div className="topbar-search" aria-hidden>
+          <span className="topbar-dept">All</span>
+          <span className="topbar-field">Search Hangazon</span>
+          <span className="topbar-go">Go</span>
+        </div>
         {game.phase !== 'intro' && (
           <div className="topbar-meta">
             {game.phase === 'letters' && game.typeSpeed > 1 && (
-              <span className="speed-pill" aria-label={`${game.typeSpeed}x speed`}>
+              <span
+                className="speed-pill"
+                aria-label={`${game.typeSpeed}x speed`}
+              >
                 {game.typeSpeed}×
               </span>
             )}
@@ -42,6 +50,14 @@ export default function App() {
           </div>
         )}
       </header>
+      <div className="subnav" aria-hidden>
+        <span>Electronics</span>
+        <span>Kitchen</span>
+        <span>Home</span>
+        <span>Fitness</span>
+        <span>Travel</span>
+        <span>Fashion</span>
+      </div>
 
       {game.phase === 'intro' ? (
         <section className="hero">
@@ -55,27 +71,21 @@ export default function App() {
               <button
                 type="button"
                 className="btn btn-primary btn-lg"
-                onClick={() => void game.startDaily()}
-                disabled={game.dailyDone || game.loading}
+                onClick={game.startDaily}
+                disabled={game.dailyDone}
               >
                 {game.dailyDone
                   ? 'Daily done'
-                  : game.loading
-                    ? '…'
-                    : `Daily · ${game.todayCategory}`}
+                  : `Daily · ${game.todayCategory}`}
               </button>
               <button
                 type="button"
                 className="btn btn-ghost btn-lg"
-                onClick={() => void game.startRandom(game.category)}
-                disabled={game.loading}
+                onClick={() => game.startRandom(game.category)}
               >
-                {game.loading ? '…' : 'Random'}
+                Random
               </button>
             </div>
-            <p className="catalog-source" data-source={game.catalogSource}>
-              {game.catalogSource === 'amazon' ? 'Amazon live' : 'Sample'}
-            </p>
           </div>
         </section>
       ) : (
@@ -94,7 +104,7 @@ export default function App() {
           <div className="store-well">
             <ZoomedProduct
               imageUrl={game.product.imageUrl}
-              alt={revealed ? game.product.title : 'Product'}
+              alt={revealed ? game.product.listingTitle : 'Product'}
               misses={game.misses}
               revealed={revealed}
               shakeKey={game.shakeKey}
