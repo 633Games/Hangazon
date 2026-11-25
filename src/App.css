@@ -33,11 +33,148 @@
   }
 }
 
-.app.is-bloodied {
+/* Full-page liquid blood overlay (not a section fill) */
+.blood-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 40;
+  pointer-events: none;
+  overflow: hidden;
+}
+
+.blood-column {
+  position: absolute;
+  left: -6%;
+  right: -6%;
+  bottom: 0;
+  height: 0;
+  display: flex;
+  flex-direction: column;
+  animation: blood-rise 1.7s cubic-bezier(0.22, 0.82, 0.2, 1) forwards;
+}
+
+.blood-meniscus {
+  flex: 0 0 clamp(2.5rem, 5vh, 3.4rem);
+  margin: 0 -3%;
   background:
-    radial-gradient(900px 520px at 12% -8%, rgba(160, 0, 18, 0.22), transparent 55%),
-    radial-gradient(700px 420px at 100% 0%, rgba(90, 0, 10, 0.18), transparent 50%),
-    linear-gradient(180deg, #2a1216 0%, #14080a 100%);
+    radial-gradient(120% 100% at 8% 100%, rgba(200, 24, 40, 0.95) 0%, transparent 56%),
+    radial-gradient(100% 120% at 40% 100%, rgba(150, 6, 20, 0.98) 0%, transparent 58%),
+    radial-gradient(110% 110% at 72% 100%, rgba(210, 36, 48, 0.9) 0%, transparent 52%),
+    radial-gradient(90% 100% at 96% 100%, rgba(100, 0, 12, 0.96) 0%, transparent 50%);
+  filter: blur(0.5px);
+  animation: blood-slosh 2.6s ease-in-out 1.5s infinite;
+  transform-origin: bottom center;
+}
+
+.blood-body {
+  flex: 1 1 auto;
+  min-height: 0;
+  background:
+    linear-gradient(
+      180deg,
+      rgba(170, 12, 28, 0.42) 0%,
+      rgba(110, 0, 14, 0.58) 32%,
+      rgba(55, 0, 8, 0.72) 68%,
+      rgba(18, 0, 4, 0.82) 100%
+    );
+  box-shadow: inset 0 18px 40px rgba(255, 50, 60, 0.12);
+}
+
+.app.is-blood-settled .blood-overlay {
+  opacity: 0.38;
+  mix-blend-mode: multiply;
+}
+
+.app.is-blood-settled .blood-column {
+  animation: none;
+  height: 115%;
+}
+
+.app.is-blood-settled .blood-meniscus {
+  animation: blood-slosh 3.2s ease-in-out infinite;
+}
+
+@keyframes blood-rise {
+  0% {
+    height: 0;
+  }
+  100% {
+    height: 115%;
+  }
+}
+
+@keyframes blood-slosh {
+  0%,
+  100% {
+    transform: translateX(0) scaleY(1);
+  }
+  50% {
+    transform: translateX(1.2%) scaleY(1.06);
+  }
+}
+
+.death-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  display: grid;
+  align-content: center;
+  justify-items: center;
+  gap: 0.55rem;
+  padding: 1.5rem;
+  background: rgba(6, 0, 2, 0.35);
+  backdrop-filter: blur(2px);
+}
+
+.you-died {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: clamp(2.8rem, 9vw, 5rem);
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  color: #ff2e2e;
+  text-shadow:
+    0 0 22px rgba(255, 40, 40, 0.5),
+    0 2px 0 #4a0000,
+    0 10px 28px rgba(0, 0, 0, 0.6);
+  animation: you-died-in 0.85s cubic-bezier(0.2, 0.9, 0.2, 1) both;
+}
+
+.death-sub {
+  margin: 0;
+  color: rgba(255, 220, 220, 0.82);
+  font-size: 0.95rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  animation: you-died-in 0.85s 0.12s cubic-bezier(0.2, 0.9, 0.2, 1) both;
+}
+
+.death-next {
+  margin-top: 0.85rem;
+  min-width: 8rem;
+  border-color: rgba(255, 180, 180, 0.45);
+  color: #ffe4e4;
+  background: rgba(40, 0, 6, 0.65);
+  animation: you-died-in 0.85s 0.22s cubic-bezier(0.2, 0.9, 0.2, 1) both;
+}
+
+.death-next:hover {
+  background: rgba(70, 0, 10, 0.8);
+  border-color: #ffb0b0;
+}
+
+@keyframes you-died-in {
+  from {
+    opacity: 0;
+    transform: translateY(12px) scale(0.92);
+    filter: blur(4px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+    filter: none;
+  }
 }
 
 .app::before {
@@ -302,168 +439,6 @@
   display: grid;
   gap: 1.25rem;
   align-items: start;
-}
-
-.pdp.is-bloodied > .pdp-media,
-.pdp.is-bloodied > .pdp-center,
-.pdp.is-bloodied > .pdp-buybox {
-  position: relative;
-  z-index: 2;
-}
-
-/* Liquid blood rising through the listing */
-.blood-fill {
-  position: absolute;
-  inset: -0.35rem;
-  z-index: 1;
-  pointer-events: none;
-  overflow: hidden;
-  border-radius: 10px;
-}
-
-.blood-column {
-  position: absolute;
-  left: -8%;
-  right: -8%;
-  bottom: 0;
-  height: 0;
-  display: flex;
-  flex-direction: column;
-  animation: blood-rise 1.65s cubic-bezier(0.22, 0.82, 0.2, 1) forwards;
-}
-
-.blood-meniscus {
-  flex: 0 0 2.35rem;
-  margin: 0 -2%;
-  background:
-    radial-gradient(120% 100% at 10% 100%, rgba(210, 30, 45, 0.92) 0%, transparent 55%),
-    radial-gradient(100% 120% at 45% 100%, rgba(170, 8, 24, 0.98) 0%, transparent 58%),
-    radial-gradient(110% 110% at 78% 100%, rgba(220, 40, 55, 0.88) 0%, transparent 52%),
-    radial-gradient(90% 100% at 95% 100%, rgba(120, 0, 14, 0.95) 0%, transparent 50%);
-  filter: blur(0.35px);
-  animation: blood-slosh 2.4s ease-in-out 1.45s infinite;
-  transform-origin: bottom center;
-}
-
-.blood-body {
-  flex: 1 1 auto;
-  min-height: 0;
-  background:
-    linear-gradient(
-      180deg,
-      rgba(190, 16, 32, 0.28) 0%,
-      rgba(130, 0, 16, 0.62) 28%,
-      rgba(78, 0, 10, 0.82) 62%,
-      rgba(36, 0, 6, 0.92) 100%
-    );
-  box-shadow: inset 0 12px 28px rgba(255, 60, 70, 0.16);
-}
-
-.pdp.is-blood-settled .blood-fill {
-  opacity: 0.58;
-}
-
-.pdp.is-blood-settled .blood-column {
-  animation: none;
-  height: 115%;
-}
-
-.pdp.is-bloodied .pdp-brand-link,
-.pdp.is-bloodied .listing-title,
-.pdp.is-bloodied .pdp-hint,
-.pdp.is-bloodied .breadcrumb {
-  color: #ffe8e8;
-  text-shadow: 0 1px 2px rgba(20, 0, 4, 0.55);
-}
-
-.pdp.is-bloodied .buybox-shell {
-  background: rgba(28, 4, 8, 0.82);
-  border-color: rgba(180, 40, 50, 0.35);
-  color: #ffe8e8;
-  box-shadow: 0 8px 28px rgba(0, 0, 0, 0.35);
-}
-
-@keyframes blood-rise {
-  0% {
-    height: 0;
-  }
-  100% {
-    height: 115%;
-  }
-}
-
-@keyframes blood-slosh {
-  0%,
-  100% {
-    transform: translateX(0) scaleY(1);
-  }
-  50% {
-    transform: translateX(1.5%) scaleY(1.08);
-  }
-}
-
-.death-overlay {
-  position: absolute;
-  inset: 0;
-  z-index: 12;
-  display: grid;
-  align-content: center;
-  justify-items: center;
-  gap: 0.55rem;
-  padding: 1.5rem;
-  background: rgba(8, 0, 2, 0.28);
-  backdrop-filter: blur(1.5px);
-}
-
-.you-died {
-  margin: 0;
-  font-family: var(--font-display);
-  font-size: clamp(2.6rem, 8vw, 4.6rem);
-  font-weight: 700;
-  letter-spacing: 0.12em;
-  color: #e62828;
-  text-shadow:
-    0 0 18px rgba(255, 40, 40, 0.45),
-    0 2px 0 #4a0000,
-    0 8px 24px rgba(0, 0, 0, 0.55);
-  animation: you-died-in 0.85s cubic-bezier(0.2, 0.9, 0.2, 1) both;
-}
-
-.death-sub {
-  margin: 0;
-  color: rgba(255, 210, 210, 0.78);
-  font-size: 0.95rem;
-  font-weight: 600;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  animation: you-died-in 0.85s 0.12s cubic-bezier(0.2, 0.9, 0.2, 1) both;
-}
-
-.death-next {
-  margin-top: 0.85rem;
-  min-width: 8rem;
-  border-color: rgba(255, 180, 180, 0.45);
-  color: #ffe4e4;
-  background: rgba(40, 0, 6, 0.55);
-  animation: you-died-in 0.85s 0.22s cubic-bezier(0.2, 0.9, 0.2, 1) both;
-}
-
-.death-next:hover {
-  background: rgba(70, 0, 10, 0.7);
-  border-color: #ffb0b0;
-}
-
-@keyframes you-died-in {
-  from {
-    opacity: 0;
-    transform: translateY(12px) scale(0.92);
-    filter: blur(4px);
-  }
-  to {
-    opacity: 1;
-    transform: none;
-    filter: none;
-  }
 }
 
 @media (min-width: 960px) {

@@ -54,6 +54,7 @@ export default function App() {
         'app',
         vibrating ? 'is-vibrating' : '',
         bloodied ? 'is-bloodied' : '',
+        bloodied && !showDeath ? 'is-blood-settled' : '',
       ]
         .filter(Boolean)
         .join(' ')}
@@ -68,6 +69,35 @@ export default function App() {
           : undefined
       }
     >
+      {bloodied && (
+        <div className="blood-overlay" aria-hidden>
+          <div className="blood-column">
+            <div className="blood-meniscus" />
+            <div className="blood-body" />
+          </div>
+        </div>
+      )}
+
+      {showDeath && (
+        <div
+          className="death-overlay"
+          role="alertdialog"
+          aria-labelledby="you-died-label"
+        >
+          <p id="you-died-label" className="you-died">
+            YOU DIED
+          </p>
+          <p className="death-sub">Out of attempts</p>
+          <button
+            type="button"
+            className="btn btn-ghost death-next"
+            onClick={game.continueAfterDeath}
+          >
+            Next
+          </button>
+        </div>
+      )}
+
       <header className="topbar">
         <p className="brand brand-bar">Hangazon</p>
         <div className="topbar-search" aria-hidden>
@@ -135,40 +165,7 @@ export default function App() {
             Hangazon › {game.product.category} › Listing
           </p>
 
-          <div
-            className={[
-              'pdp',
-              bloodied ? 'is-bloodied' : '',
-              bloodied && !showDeath ? 'is-blood-settled' : '',
-            ]
-              .filter(Boolean)
-              .join(' ')}
-          >
-            {bloodied && (
-              <div className="blood-fill" aria-hidden>
-                <div className="blood-column">
-                  <div className="blood-meniscus" />
-                  <div className="blood-body" />
-                </div>
-              </div>
-            )}
-
-            {showDeath && (
-              <div className="death-overlay" role="alertdialog" aria-labelledby="you-died-label">
-                <p id="you-died-label" className="you-died">
-                  YOU DIED
-                </p>
-                <p className="death-sub">Out of attempts</p>
-                <button
-                  type="button"
-                  className="btn btn-ghost death-next"
-                  onClick={game.continueAfterDeath}
-                >
-                  Next
-                </button>
-              </div>
-            )}
-
+          <div className="pdp">
             <div className="pdp-media">
               <ZoomedProduct
                 imageUrl={game.product.imageUrl}
