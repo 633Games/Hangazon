@@ -448,23 +448,25 @@
   border: 1px dashed var(--line-strong);
   background:
     linear-gradient(180deg, rgba(244, 246, 248, 0.92), rgba(227, 231, 237, 0.85));
-  opacity: 0.72;
-  filter: grayscale(0.35);
+  opacity: 0.85;
 }
 
 .rung-locked-media {
   width: 64px;
   height: 64px;
-  overflow: hidden;
-  background: var(--tile);
+  display: grid;
+  place-items: center;
+  background:
+    radial-gradient(circle at 40% 35%, rgba(255, 255, 255, 0.55), transparent 55%),
+    linear-gradient(160deg, #d7dde6, #b8c0cc);
+  border: 1px solid rgba(35, 47, 62, 0.12);
 }
 
-.rung-locked-media img {
-  width: 100%;
-  height: 100%;
-  object-fit: contain;
-  filter: blur(2px);
-  transform: scale(1.05);
+.rung-padlock {
+  display: grid;
+  place-items: center;
+  color: var(--navy-2);
+  opacity: 0.72;
 }
 
 .rung-locked-copy {

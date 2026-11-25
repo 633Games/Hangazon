@@ -276,7 +276,7 @@ export default function App() {
                     <Lives misses={game.misses} />
                     <Keyboard
                       guessed={game.guessed}
-                      title={game.title}
+                      titleLetters={game.titleLetters}
                       disabled={game.letterOutcome !== null}
                       pending={game.pendingLetters}
                       onGuess={game.guessLetter}
@@ -350,20 +350,36 @@ export default function App() {
             </div>
           </section>
 
-          {game.lockedAhead.map((p, i) => (
+          {Array.from({ length: game.lockedAheadCount }, (_, i) => (
             <article
-              key={p.id}
+              key={`locked-${game.history.length + 2 + i}`}
               className="ladder-rung ladder-rung-locked"
               aria-hidden
             >
-              <div className="rung-locked-media">
-                <img src={p.imageUrl} alt="" />
+              <div className="rung-locked-media" aria-hidden>
+                <span className="rung-padlock">
+                  <svg
+                    viewBox="0 0 24 24"
+                    width="28"
+                    height="28"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="1.75"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  >
+                    <rect x="5" y="11" width="14" height="10" rx="1.5" />
+                    <path d="M8 11V8a4 4 0 0 1 8 0v3" />
+                  </svg>
+                </span>
               </div>
               <div className="rung-locked-copy">
                 <p className="rung-step">
                   #{game.history.length + 2 + i} · Locked
                 </p>
-                <p className="rung-locked-hint">Clear the listing above to unlock</p>
+                <p className="rung-locked-hint">
+                  Clear the listing above to unlock
+                </p>
               </div>
             </article>
           ))}

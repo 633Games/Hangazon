@@ -3,9 +3,10 @@ import {
   type Product,
   productsIn,
 } from '../data/products'
+import { sealLadder, type SealedProduct } from './vault'
 
 /** Fisher–Yates shuffle (copy). */
-export function shuffleProducts(list: readonly Product[]): Product[] {
+export function shuffleProducts<T>(list: readonly T[]): T[] {
   const next = [...list]
   for (let i = next.length - 1; i > 0; i--) {
     const j = Math.floor(Math.random() * (i + 1))
@@ -16,10 +17,11 @@ export function shuffleProducts(list: readonly Product[]): Product[] {
   return next
 }
 
-/** Ladder order for a climb — aisle filter, then shuffle. */
-export function buildLadder(filter: CategoryFilter = 'All'): Product[] {
+/** Ladder order for a climb — aisle filter, then shuffle, then seal. */
+export function buildLadder(filter: CategoryFilter = 'All'): SealedProduct[] {
   const pool = productsIn(filter)
-  return shuffleProducts(pool.length > 0 ? pool : productsIn('All'))
+  const open = shuffleProducts(pool.length > 0 ? pool : productsIn('All'))
+  return sealLadder(open)
 }
 
 export type LadderResult = 'cleared' | 'failed'
@@ -32,3 +34,5 @@ export type LadderHistoryEntry = {
   blankBonus: number
   blanksAtGuess: number
 }
+
+export type { SealedProduct }

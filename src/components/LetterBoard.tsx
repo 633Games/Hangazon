@@ -267,7 +267,12 @@ export function LetterBoard({
   let flatCounter = 0
 
   return (
-    <h1 className="listing-title" aria-label="Product title">
+    <h1
+      className="listing-title"
+      aria-label={
+        forceReveal ? 'Product title' : 'Product title with blanks'
+      }
+    >
       {missDrops.map((drop) => (
         <span
           key={drop.id}

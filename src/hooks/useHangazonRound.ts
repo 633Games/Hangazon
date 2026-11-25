@@ -1,12 +1,10 @@
 import { useCallback, useMemo, useRef, useState } from 'react'
-import {
-  type CategoryFilter,
-  type Product,
-} from '../data/products'
+import { type CategoryFilter } from '../data/products'
 import {
   buildLadder,
   type LadderHistoryEntry,
   type LadderResult,
+  type SealedProduct,
 } from '../lib/ladder'
 import {
   isTitleSolved,
@@ -23,6 +21,7 @@ import {
   countLetterSlots,
   finalScore,
 } from '../lib/scoring'
+import { openProduct } from '../lib/vault'
 
 export type Phase = 'intro' | 'letters' | 'price' | 'reveal'
 
@@ -48,16 +47,27 @@ function freshBoard() {
   }
 }
 
+const LOCKED_PREVIEW = 2
+
+function openActive(ladder: SealedProduct[], index: number) {
+  const sealed = ladder[index] ?? ladder[0]!
+  return openProduct(sealed)
+}
+
 export function useHangazonRound() {
   const [category, setCategory] = useState<CategoryFilter>('All')
-  const [ladder, setLadder] = useState<Product[]>(() => buildLadder('All'))
+  /** Sealed ladder — future rungs stay opaque in client state. */
+  const [ladder, setLadder] = useState<SealedProduct[]>(() => buildLadder('All'))
   const [activeIndex, setActiveIndex] = useState(0)
   const [history, setHistory] = useState<LadderHistoryEntry[]>([])
   const [clears, setClears] = useState(0)
   const [bestClears, setBestClears] = useState(0)
   const [scrollToken, setScrollToken] = useState(0)
 
-  const product = ladder[activeIndex] ?? ladder[0]!
+  const product = useMemo(
+    () => openActive(ladder, activeIndex),
+    [ladder, activeIndex],
+  )
 
   const [phase, setPhase] = useState<Phase>('intro')
   const [guessed, setGuessed] = useState<Set<string>>(() => new Set())
@@ -106,10 +116,18 @@ export function useHangazonRound() {
   categoryRef.current = category
 
   const title = useMemo(() => normalizeTitle(product.title), [product.title])
-  const lockedAhead = useMemo(
-    () => ladder.slice(activeIndex + 1, activeIndex + 3),
-    [ladder, activeIndex],
-  )
+  const titleLetters = useMemo(() => {
+    const set = new Set<string>()
+    for (const ch of title) {
+      if (/[A-Z]/.test(ch)) set.add(ch)
+    }
+    return set
+  }, [title])
+  /** Count only — never expose sealed product payloads to the UI tree. */
+  const lockedAheadCount = useMemo(() => {
+    const remaining = Math.max(0, ladder.length - activeIndex - 1)
+    return Math.min(LOCKED_PREVIEW, remaining)
+  }, [ladder.length, activeIndex])
 
   const bumpSpeed = useCallback((combo: number) => {
     const speed = Math.min(
@@ -465,13 +483,13 @@ export function useHangazonRound() {
   return {
     product,
     title,
+    titleLetters,
     phase,
     category,
     setCategory,
-    ladder,
     activeIndex,
     history,
-    lockedAhead,
+    lockedAheadCount,
     clears,
     bestClears,
     scrollToken,
