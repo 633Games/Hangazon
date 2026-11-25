@@ -222,14 +222,24 @@ export default function App() {
       {onLobby ? (
         <div className="lobby">
           <section className="climb-home" aria-label="Hangazon Climb">
-            <img
-              className="climb-home-logo"
-              src={`${import.meta.env.BASE_URL}hangazon-logo.png`}
-              alt="Hangazon"
-              width={320}
-              height={250}
-              decoding="async"
-            />
+            <div className="climb-logo" role="img" aria-label="Hangazon">
+              <img
+                className="climb-logo-base"
+                src={`${import.meta.env.BASE_URL}hangazon-logo-base.png`}
+                alt=""
+                width={800}
+                height={627}
+                decoding="async"
+              />
+              <img
+                className="climb-logo-figure"
+                src={`${import.meta.env.BASE_URL}hangazon-logo-figure.png`}
+                alt=""
+                width={800}
+                height={627}
+                decoding="async"
+              />
+            </div>
             <button
               type="button"
               className="btn btn-primary btn-lg climb-home-cta"

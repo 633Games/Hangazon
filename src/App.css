@@ -426,19 +426,70 @@
     linear-gradient(180deg, var(--bg) 0%, var(--bg-deep) 100%);
 }
 
-.climb-home-logo {
+/* Layered logo: static base + hanged man drop/swing on load */
+.climb-logo {
+  position: relative;
   width: min(18rem, 72vw);
+  max-height: 11rem;
+  line-height: 0;
+  animation: brand-in 0.55s var(--ease-snap) both;
+}
+
+.climb-logo-base,
+.climb-logo-figure {
+  display: block;
+  width: 100%;
   height: auto;
   max-height: 11rem;
   object-fit: contain;
-  /* Original mark is black ink — fine on light home ground */
-  filter: none;
-  animation: brand-in 0.55s var(--ease-snap) both;
+}
+
+.climb-logo-figure {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  /* Pivot near rope knot / arrow tip */
+  transform-origin: 47.8% 5%;
+  animation: hangman-drop-swing 1.15s var(--ease-snap) 0.12s both;
+  will-change: transform;
+}
+
+@keyframes hangman-drop-swing {
+  0% {
+    opacity: 0;
+    transform: translateY(-22%) rotate(-22deg);
+  }
+  18% {
+    opacity: 1;
+  }
+  52% {
+    transform: translateY(2%) rotate(10deg);
+  }
+  72% {
+    transform: translateY(0) rotate(-5deg);
+  }
+  88% {
+    transform: translateY(0) rotate(2deg);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) rotate(0deg);
+  }
 }
 
 .climb-home-cta {
   min-width: min(16rem, 100%);
-  animation: rise-in 0.55s var(--ease-snap) 0.06s both;
+  animation: rise-in 0.55s var(--ease-snap) 0.35s both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .climb-logo-figure {
+    animation: none !important;
+    opacity: 1 !important;
+    transform: none !important;
+  }
 }
 
 .lobby-board {
