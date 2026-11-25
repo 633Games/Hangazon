@@ -70,6 +70,8 @@ export function useHangazonRound() {
 
   const guessedRef = useRef(guessed)
   guessedRef.current = guessed
+  const missesRef = useRef(misses)
+  missesRef.current = misses
   const queueRef = useRef(queue)
   queueRef.current = queue
   const flightRef = useRef(flight)
@@ -168,9 +170,10 @@ export function useHangazonRound() {
     setGuessed(nextGuessed)
     guessedRef.current = nextGuessed
 
-    let nextMisses = misses
+    let nextMisses = missesRef.current
     if (!current.hit) {
-      nextMisses = misses + 1
+      nextMisses = missesRef.current + 1
+      missesRef.current = nextMisses
       setMisses(nextMisses)
       setShakeKey((k) => k + 1)
     }
@@ -207,7 +210,7 @@ export function useHangazonRound() {
     setFlightBusy(false)
     setTypeSpeed(1)
     comboRef.current = 0
-  }, [misses, title, bumpSpeed, beginFlight])
+  }, [title, bumpSpeed, beginFlight])
 
   const submitPrice = useCallback(() => {
     if (phase !== 'price') return
