@@ -1,4 +1,4 @@
-# Hamazon
+# Hangazon
 
 Hangman meets the storefront: zoomed product → letter scan → price score → baked Amazon Associates link.
 
