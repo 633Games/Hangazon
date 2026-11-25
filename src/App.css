@@ -1327,11 +1327,11 @@ button.listing-word.is-guessable:focus-visible {
   white-space: pre;
 }
 
-/* —— Quiz keyboard —— */
+/* —— Quiz keyboard (industry QWERTY: 3 rows, keys scale to width) —— */
 .keyboard {
   display: grid;
-  gap: 0.45rem;
-  justify-items: start;
+  gap: clamp(0.28rem, 1.2vw, 0.45rem);
+  justify-items: stretch;
   padding: 0.35rem 0 0.15rem;
   width: 100%;
   max-width: 100%;
@@ -1339,23 +1339,27 @@ button.listing-word.is-guessable:focus-visible {
 
 .keyboard-row {
   display: flex;
-  flex-wrap: wrap;
-  gap: 0.32rem;
+  flex-wrap: nowrap;
+  justify-content: center;
+  align-items: stretch;
+  gap: clamp(0.14rem, 0.9vw, 0.32rem);
   width: 100%;
   max-width: 100%;
 }
 
 .key {
-  min-width: max(var(--touch-min), clamp(2.2rem, 8.2vw, 2.75rem));
-  min-height: var(--touch-min);
-  height: auto;
-  padding: 0.45rem 0.42rem;
+  flex: 1 1 0;
+  min-width: 0;
+  width: 0; /* equal flex share within the row (10 / 9 / 7) */
+  max-width: 2.85rem;
+  height: clamp(2.15rem, 9.5vw, 2.85rem);
+  padding: 0;
   border: 1px solid transparent;
   border-radius: 6px;
   background: linear-gradient(180deg, #ffffff 0%, #eef1f4 100%);
   color: var(--ink);
   font-family: var(--font-body);
-  font-size: 0.92rem;
+  font-size: clamp(0.72rem, 2.8vw, 0.95rem);
   font-weight: 700;
   letter-spacing: 0.02em;
   cursor: pointer;
@@ -1976,17 +1980,8 @@ button.listing-word.is-guessable:focus-visible {
     font-size: clamp(1rem, 4.2vw, 1.25rem);
   }
 
-  .keyboard {
-    justify-items: stretch;
-  }
-
-  .keyboard-row {
-    justify-content: flex-start;
-  }
-
   .key {
-    flex: 0 0 auto;
-    font-size: 0.88rem;
+    max-width: none; /* fill row width on phones — may be <44px wide */
   }
 
   .title-guess-row,
@@ -2039,14 +2034,7 @@ button.listing-word.is-guessable:focus-visible {
   }
 }
 
-/* Very narrow phones: keep keys ≥44px even if rows wrap more */
 @media (max-width: 380px) {
-  .key {
-    min-width: var(--touch-min);
-    padding-inline: 0.28rem;
-    font-size: 0.82rem;
-  }
-
   .topbar-meta {
     max-width: 48%;
   }
