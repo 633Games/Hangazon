@@ -2,6 +2,7 @@ import { useEffect } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
 import { CategoryChips } from './components/CategoryChips'
 import { Gallows } from './components/Gallows'
+import { Lives } from './components/Lives'
 import { Keyboard } from './components/Keyboard'
 import { LetterBoard } from './components/LetterBoard'
 import { PriceGuess } from './components/PriceGuess'
@@ -66,7 +67,10 @@ export default function App() {
         <main className="round">
           <div className="round-top">
             {game.phase === 'letters' ? (
-              <Gallows misses={game.misses} />
+              <>
+                <Lives misses={game.misses} />
+                <Gallows misses={game.misses} />
+              </>
             ) : (
               <span />
             )}

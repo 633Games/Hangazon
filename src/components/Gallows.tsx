@@ -6,32 +6,69 @@ type Props = {
 
 export function Gallows({ misses }: Props) {
   const parts = [
-    misses >= 1, // head
-    misses >= 2, // body
-    misses >= 3, // left arm
-    misses >= 4, // right arm
-    misses >= 5, // left leg
-    misses >= 6, // right leg
+    misses >= 1,
+    misses >= 2,
+    misses >= 3,
+    misses >= 4,
+    misses >= 5,
+    misses >= 6,
   ]
 
   return (
     <div className="gallows" aria-label={`${misses} of ${MAX_MISSES} misses`}>
       <svg viewBox="0 0 120 140" className="gallows-svg" aria-hidden>
         <path
-          d="M20 130 H100 M40 130 V20 H80 V35"
+          d="M18 128 H102 M36 128 V18 H84 V32"
           className="gallows-beam"
           fill="none"
         />
-        {parts[0] && <circle cx="80" cy="48" r="12" className="gallows-part" />}
-        {parts[1] && <line x1="80" y1="60" x2="80" y2="92" className="gallows-part" />}
-        {parts[2] && <line x1="80" y1="70" x2="62" y2="84" className="gallows-part" />}
-        {parts[3] && <line x1="80" y1="70" x2="98" y2="84" className="gallows-part" />}
-        {parts[4] && <line x1="80" y1="92" x2="64" y2="114" className="gallows-part" />}
-        {parts[5] && <line x1="80" y1="92" x2="96" y2="114" className="gallows-part" />}
+        <path
+          d="M84 32 V40"
+          className={`gallows-part${parts[0] ? ' is-on' : ''}`}
+          fill="none"
+        />
+        <circle
+          cx="84"
+          cy="52"
+          r="11"
+          className={`gallows-part gallows-head${parts[0] ? ' is-on' : ''}`}
+        />
+        <line
+          x1="84"
+          y1="63"
+          x2="84"
+          y2="94"
+          className={`gallows-part${parts[1] ? ' is-on' : ''}`}
+        />
+        <line
+          x1="84"
+          y1="72"
+          x2="66"
+          y2="86"
+          className={`gallows-part${parts[2] ? ' is-on' : ''}`}
+        />
+        <line
+          x1="84"
+          y1="72"
+          x2="102"
+          y2="86"
+          className={`gallows-part${parts[3] ? ' is-on' : ''}`}
+        />
+        <line
+          x1="84"
+          y1="94"
+          x2="68"
+          y2="116"
+          className={`gallows-part${parts[4] ? ' is-on' : ''}`}
+        />
+        <line
+          x1="84"
+          y1="94"
+          x2="100"
+          y2="116"
+          className={`gallows-part${parts[5] ? ' is-on' : ''}`}
+        />
       </svg>
-      <span className="gallows-count">
-        {misses}/{MAX_MISSES}
-      </span>
     </div>
   )
 }
