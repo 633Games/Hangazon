@@ -12,9 +12,12 @@ import {
 } from '../lib/daily'
 import {
   isTitleSolved,
+  isWordRevealed,
   MAX_MISSES,
   normalizeTitle,
+  titleWords,
   titlesMatch,
+  wordMatches,
 } from '../lib/hangman'
 import {
   blankSpaceBonus,
@@ -257,15 +260,7 @@ export function useHangazonRound() {
     window.setTimeout(() => setPhase('price'), 280)
   }, [title, clearFlights])
 
-  const submitTitleGuess = useCallback(() => {
-    if (phase !== 'letters' || outcomeRef.current !== null) return
-    if (!titleGuess.trim()) return
-
-    if (titlesMatch(titleGuess, title)) {
-      succeedTitleGuess()
-      return
-    }
-
+  const applyTitleMiss = useCallback(() => {
     setTitleGuessWrong(true)
     const nextMisses = missesRef.current + 1
     missesRef.current = nextMisses
@@ -278,7 +273,53 @@ export function useHangazonRound() {
       outcomeRef.current = 'lose'
       window.setTimeout(() => setPhase('price'), 420)
     }
-  }, [phase, titleGuess, title, succeedTitleGuess, clearFlights])
+  }, [clearFlights])
+
+  const submitTitleGuess = useCallback(() => {
+    if (phase !== 'letters' || outcomeRef.current !== null) return
+    if (!titleGuess.trim()) return
+
+    if (titlesMatch(titleGuess, title)) {
+      succeedTitleGuess()
+      return
+    }
+
+    applyTitleMiss()
+  }, [phase, titleGuess, title, succeedTitleGuess, applyTitleMiss])
+
+  /** Correct word guess → reveal that word's letters on the board. */
+  const submitWordGuess = useCallback(
+    (wordIndex: number) => {
+      if (phase !== 'letters' || outcomeRef.current !== null) return
+      if (!titleGuess.trim()) return
+
+      const words = titleWords(title)
+      const target = words[wordIndex]
+      if (!target || isWordRevealed(target, guessedRef.current)) return
+
+      if (!wordMatches(titleGuess, title, wordIndex)) {
+        applyTitleMiss()
+        return
+      }
+
+      const nextGuessed = new Set(guessedRef.current)
+      for (const ch of target) {
+        if (/[A-Z]/.test(ch)) nextGuessed.add(ch)
+      }
+      setGuessed(nextGuessed)
+      guessedRef.current = nextGuessed
+      setTitleGuessState('')
+      setTitleGuessWrong(false)
+
+      if (isTitleSolved(title, nextGuessed)) {
+        clearFlights()
+        setLetterOutcome('win')
+        outcomeRef.current = 'win'
+        window.setTimeout(() => setPhase('price'), 420)
+      }
+    },
+    [phase, titleGuess, title, applyTitleMiss, clearFlights],
+  )
 
   const submitPrice = useCallback(() => {
     if (phase !== 'price') return
@@ -369,6 +410,7 @@ export function useHangazonRound() {
     guessLetter,
     finishFlight,
     submitTitleGuess,
+    submitWordGuess,
     submitPrice,
     playAgain,
     blankBonus,

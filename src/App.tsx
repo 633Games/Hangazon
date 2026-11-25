@@ -167,9 +167,12 @@ export default function App() {
                     className="buybox-shell"
                   >
                     <TitleGuess
+                      title={game.title}
+                      guessed={game.guessed}
                       value={game.titleGuess}
                       onChange={game.setTitleGuess}
-                      onSubmit={game.submitTitleGuess}
+                      onSubmitWord={game.submitWordGuess}
+                      onSubmitTitle={game.submitTitleGuess}
                       disabled={game.letterOutcome !== null}
                       wrong={game.titleGuessWrong}
                     />
