@@ -10,13 +10,14 @@ type Props = {
   onFlightDone: () => void
   /** When true, blank title words are hoverable/clickable guess targets. */
   interactive?: boolean
-  selectedWord?: number | null
-  onWordClick?: (wordIndex: number) => void
+  /** Returns true when the word guess was correct. */
+  onSubmitWord?: (wordIndex: number, guess: string) => boolean
 }
 
 const STEP_MS = 52
 const LAND_MS = 100
 const MISS_TAIL_MS = 90
+const WRONG_FLASH_MS = 480
 
 export function LetterBoard({
   title,
@@ -25,8 +26,7 @@ export function LetterBoard({
   flight,
   onFlightDone,
   interactive = false,
-  selectedWord = null,
-  onWordClick,
+  onSubmitWord,
 }: Props) {
   const slots = useMemo(() => {
     const out: { ch: string; flat: number }[] = []
@@ -52,6 +52,66 @@ export function LetterBoard({
   const [landed, setLanded] = useState<Set<number>>(() => new Set())
   const [flying, setFlying] = useState(false)
   const flightId = flight?.id ?? null
+
+  const [activeWord, setActiveWord] = useState<number | null>(null)
+  const [draft, setDraft] = useState('')
+  const [wrongFlash, setWrongFlash] = useState(false)
+  const inputRef = useRef<HTMLInputElement>(null)
+  const popRef = useRef<HTMLFormElement>(null)
+  const flashTimer = useRef<number | null>(null)
+
+  const closePop = () => {
+    if (flashTimer.current !== null) {
+      window.clearTimeout(flashTimer.current)
+      flashTimer.current = null
+    }
+    setActiveWord(null)
+    setDraft('')
+    setWrongFlash(false)
+  }
+
+  useEffect(() => {
+    if (!interactive) closePop()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [interactive, title])
+
+  useEffect(() => {
+    return () => {
+      if (flashTimer.current !== null) window.clearTimeout(flashTimer.current)
+    }
+  }, [])
+
+  useEffect(() => {
+    if (activeWord === null || wrongFlash) return
+    window.requestAnimationFrame(() => inputRef.current?.focus())
+  }, [activeWord, wrongFlash])
+
+  useEffect(() => {
+    if (activeWord === null) return
+
+    const onPointerDown = (e: PointerEvent) => {
+      const t = e.target
+      if (!(t instanceof Node)) return
+      if (popRef.current?.contains(t)) return
+      const wrap = (t as Element).closest?.('.listing-word-wrap')
+      if (wrap?.classList.contains('is-active')) return
+      closePop()
+    }
+
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        e.preventDefault()
+        closePop()
+      }
+    }
+
+    document.addEventListener('pointerdown', onPointerDown)
+    window.addEventListener('keydown', onKey)
+    return () => {
+      document.removeEventListener('pointerdown', onPointerDown)
+      window.removeEventListener('keydown', onKey)
+    }
+  }, [activeWord])
 
   useEffect(() => {
     if (!flight) {
@@ -132,6 +192,36 @@ export function LetterBoard({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [flightId])
 
+  const openWord = (index: number) => {
+    if (!interactive || wrongFlash) return
+    const word = words[index]
+    if (!word || isWordRevealed(word, guessed)) return
+    if (flashTimer.current !== null) {
+      window.clearTimeout(flashTimer.current)
+      flashTimer.current = null
+    }
+    setWrongFlash(false)
+    setActiveWord(index)
+    setDraft('')
+  }
+
+  const submitActive = () => {
+    if (activeWord === null || wrongFlash || !onSubmitWord) return
+    if (!draft.trim()) return
+
+    const ok = onSubmitWord(activeWord, draft)
+    if (ok) {
+      closePop()
+      return
+    }
+
+    setWrongFlash(true)
+    flashTimer.current = window.setTimeout(() => {
+      flashTimer.current = null
+      closePop()
+    }, WRONG_FLASH_MS)
+  }
+
   let flatCounter = 0
 
   return (
@@ -140,8 +230,9 @@ export function LetterBoard({
         const norm = words[wi] ?? ''
         const revealed =
           forceReveal || (norm.length > 0 && isWordRevealed(norm, guessed))
-        const selected = interactive && selectedWord === wi
-        const canClick = interactive && !revealed && Boolean(onWordClick)
+        const selected = interactive && activeWord === wi
+        const canClick =
+          interactive && !revealed && Boolean(onSubmitWord) && !wrongFlash
 
         const chars = [...rawWord].map((ch) => {
           const flat = flatCounter++
@@ -169,25 +260,28 @@ export function LetterBoard({
 
         const wordClass = [
           'listing-word',
-          canClick ? 'is-guessable' : '',
+          canClick || selected ? 'is-guessable' : '',
           selected ? 'is-selected' : '',
+          selected && wrongFlash ? 'is-wrong' : '',
           revealed && interactive ? 'is-revealed' : '',
         ]
           .filter(Boolean)
           .join(' ')
 
-        const wordNode = canClick ? (
+        const wordNode = canClick || selected ? (
           <button
             type="button"
             className={wordClass}
-            aria-pressed={selected}
+            aria-expanded={selected}
+            aria-controls={selected ? `word-guess-pop-${wi}` : undefined}
             aria-label={
               revealed
                 ? `Word ${wi + 1} revealed: ${norm}`
                 : `Guess word ${wi + 1}, ${norm.length} letters`
             }
             title={`Click to guess this ${norm.length}-letter word`}
-            onClick={() => onWordClick?.(wi)}
+            disabled={wrongFlash && !selected}
+            onClick={() => openWord(wi)}
           >
             {chars}
           </button>
@@ -196,7 +290,57 @@ export function LetterBoard({
         )
 
         return (
-          <span key={`${rawWord}-${wi}`} className="listing-word-wrap">
+          <span
+            key={`${rawWord}-${wi}`}
+            className={[
+              'listing-word-wrap',
+              selected ? 'is-active' : '',
+              selected && wrongFlash ? 'is-wrong' : '',
+            ]
+              .filter(Boolean)
+              .join(' ')}
+          >
+            {selected && (
+              <form
+                ref={popRef}
+                id={`word-guess-pop-${wi}`}
+                className={[
+                  'word-guess-pop',
+                  wrongFlash ? 'is-wrong' : '',
+                ]
+                  .filter(Boolean)
+                  .join(' ')}
+                role="group"
+                aria-label={`Type word ${wi + 1}`}
+                onSubmit={(e) => {
+                  e.preventDefault()
+                  submitActive()
+                }}
+              >
+                <input
+                  ref={inputRef}
+                  className="word-guess-pop-input"
+                  autoComplete="off"
+                  spellCheck={false}
+                  placeholder="Type word…"
+                  aria-label={`Guess for word ${wi + 1}`}
+                  aria-invalid={wrongFlash || undefined}
+                  value={draft}
+                  disabled={wrongFlash}
+                  onChange={(e) => setDraft(e.target.value)}
+                  onClick={(e) => e.stopPropagation()}
+                />
+                <button
+                  type="submit"
+                  className="word-guess-pop-tick"
+                  disabled={wrongFlash || !draft.trim()}
+                  aria-label="Submit word guess"
+                  title="Submit"
+                >
+                  ✓
+                </button>
+              </form>
+            )}
             {wordNode}
             {wi < displayWords.length - 1 ? (
               <span className="listing-space" aria-hidden>

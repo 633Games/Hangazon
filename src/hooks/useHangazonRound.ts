@@ -261,7 +261,6 @@ export function useHangazonRound() {
   }, [title, clearFlights])
 
   const applyTitleMiss = useCallback(() => {
-    setTitleGuessWrong(true)
     const nextMisses = missesRef.current + 1
     missesRef.current = nextMisses
     setMisses(nextMisses)
@@ -284,22 +283,26 @@ export function useHangazonRound() {
       return
     }
 
+    setTitleGuessWrong(true)
     applyTitleMiss()
   }, [phase, titleGuess, title, succeedTitleGuess, applyTitleMiss])
 
-  /** Correct word guess → reveal that word's letters on the board. */
+  /**
+   * Correct word guess → reveal that word's letters on the board.
+   * Returns true when the guess matched.
+   */
   const submitWordGuess = useCallback(
-    (wordIndex: number) => {
-      if (phase !== 'letters' || outcomeRef.current !== null) return
-      if (!titleGuess.trim()) return
+    (wordIndex: number, guess: string): boolean => {
+      if (phase !== 'letters' || outcomeRef.current !== null) return false
+      if (!guess.trim()) return false
 
       const words = titleWords(title)
       const target = words[wordIndex]
-      if (!target || isWordRevealed(target, guessedRef.current)) return
+      if (!target || isWordRevealed(target, guessedRef.current)) return false
 
-      if (!wordMatches(titleGuess, title, wordIndex)) {
+      if (!wordMatches(guess, title, wordIndex)) {
         applyTitleMiss()
-        return
+        return false
       }
 
       const nextGuessed = new Set(guessedRef.current)
@@ -308,7 +311,6 @@ export function useHangazonRound() {
       }
       setGuessed(nextGuessed)
       guessedRef.current = nextGuessed
-      setTitleGuessState('')
       setTitleGuessWrong(false)
 
       if (isTitleSolved(title, nextGuessed)) {
@@ -317,8 +319,9 @@ export function useHangazonRound() {
         outcomeRef.current = 'win'
         window.setTimeout(() => setPhase('price'), 420)
       }
+      return true
     },
-    [phase, titleGuess, title, applyTitleMiss, clearFlights],
+    [phase, title, applyTitleMiss, clearFlights],
   )
 
   const submitPrice = useCallback(() => {
